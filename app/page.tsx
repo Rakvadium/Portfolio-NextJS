@@ -30,9 +30,9 @@ export default function Home() {
   return (
     <>
       <Navigation />
-      <main className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white md:pt-20">
+      <main className="min-h-screen text-gray-900 dark:text-white md:pt-20 relative">
         {/* Profile Section */}
-        <section id="home" className="min-h-[100vh] md:min-h-0 md:py-32 flex items-center">
+        <section id="home" className="min-h-[100vh] md:min-h-0 md:py-32 flex items-center relative overflow-hidden">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -46,15 +46,15 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-4xl md:text-5xl font-bold mb-4 text-center md:text-left"
+                  className="text-4xl md:text-6xl font-bold mb-4 text-center md:text-left neon-glow-hover"
                 >
-                  Hi, I&apos;m <span className="text-blue-600 dark:text-blue-400">Caleb Mills</span>
+                  Hi, I&apos;m <span className="text-[#00f3ff]">Caleb Mills</span>
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  className="text-xl text-gray-600 dark:text-gray-300 mb-6 text-center md:text-left"
+                  className="text-xl text-gray-300 mb-6 text-center md:text-left"
                 >
                   Full Stack Developer specializing in React, Vue, and C#
                 </motion.p>
@@ -66,13 +66,13 @@ export default function Home() {
                 >
                   <a
                     href="#projects"
-                    className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center"
+                    className="w-full md:w-auto px-8 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-center neon-border"
                   >
                     View My Work
                   </a>
                   <a
                     href="#contact"
-                    className="w-full md:w-auto px-6 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-center"
+                    className="w-full md:w-auto px-8 py-3 bg-transparent border border-primary text-primary rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-center neon-border"
                   >
                     Contact Me
                   </a>
@@ -86,7 +86,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.3 }}
                 className="w-full md:w-1/2 flex justify-center md:justify-end order-first md:order-last"
               >
-                <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400">
+                <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden neon-box-hover">
                   <Image
                     src="/profile.jpg"
                     alt="Caleb Mills"
@@ -100,8 +100,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Skills Section */}
-        <section id="skills" className="py-16 md:py-20 bg-gray-50 dark:bg-gray-800">
+        {/* Skills Section - Darker Background */}
+        <section id="skills" className="py-16 md:py-20 bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -109,15 +109,16 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-center mb-8 md:mb-12">Skills</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <h2 className="text-4xl font-bold text-center mb-12 neon-glow-hover">Skills</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {["React (Next)", "TypeScript", "ES6+", "Vue (Nuxt)", "UI/UX", "C#", ".NET", "SQL", "REST APIs", "AWS"].map((skill) => (
-                  <div
+                  <motion.div
                     key={skill}
-                    className="p-4 bg-white dark:bg-gray-700 rounded-lg text-center hover:shadow-lg transition-shadow"
+                    whileHover={{ scale: 1.05 }}
+                    className="p-4 bg-white dark:bg-gray-700 rounded-lg text-center neon-border"
                   >
                     {skill}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
@@ -125,7 +126,7 @@ export default function Home() {
         </section>
 
         {/* Experience Section */}
-        <section id="experience" className="py-20 bg-gray-50 dark:bg-gray-900">
+        <section id="experience" className="py-20 relative overflow-hidden">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -133,33 +134,39 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-center mb-12">Experience</h2>
+              <h2 className="text-4xl font-bold text-center mb-12 neon-glow-hover">Experience</h2>
               <div className="space-y-8">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-xl font-bold">Software Developer</h3>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg shadow-lg neon-border"
+                >
+                  <h3 className="text-xl font-bold text-[#00f3ff]">Software Developer</h3>
                   <p className="text-gray-600 dark:text-gray-300">KensieMae, LLC, Remote</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">August 2023 - Present</p>
-                  <ul className="mt-4 list-disc list-inside space-y-2">
+                  <p className="text-sm text-[#ff00ff]">August 2023 - Present</p>
+                  <ul className="mt-4 list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
                     <li>Develop and maintain web applications using React, Vue (Nuxt), ES6+, C#</li>
                     <li>Collaborate with cross-functional teams to deliver software products</li>
                     <li>Implement UI/UX designs to enhance user experience</li>
                   </ul>
-                </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                  <h3 className="text-xl font-bold">Software Developer</h3>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg shadow-lg neon-border"
+                >
+                  <h3 className="text-xl font-bold text-[#00f3ff]">Software Developer</h3>
                   <p className="text-gray-600 dark:text-gray-300">Velma.com, Nampa, Idaho</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">July 2015 - August 2023</p>
-                  <ul className="mt-4 list-disc list-inside space-y-2">
+                  <p className="text-sm text-[#ff00ff]">July 2015 - August 2023</p>
+                  <ul className="mt-4 list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
                     <li>Developed marketing software using C#, React, Angular 1.X, Node, JavaScript</li>
                   </ul>
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>
         </section>
 
-        {/* Projects Section */}
-        <section id="projects" className="py-20 bg-white dark:bg-gray-800">
+        {/* Projects Section - Darker Background */}
+        <section id="projects" className="py-20 bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -167,7 +174,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl font-bold text-center mb-12">Projects</h2>
+              <h2 className="text-4xl font-bold text-center mb-12 neon-glow-hover">Projects</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {projects.map((project) => (
                   <ProjectCard key={project.title} {...project} />

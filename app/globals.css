@@ -76,6 +76,11 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --neon-blue: #00f3ff;
+  --neon-pink: #ff00ff;
+  --neon-purple: #bc13fe;
+  --dark-bg: #0a0a0f;
+  --darker-bg: #050507;
 }
 
 .dark {
@@ -118,5 +123,90 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .neon-glow-hover {
+    @apply transition-all duration-300;
+  }
+  .neon-glow-hover:hover {
+    text-shadow: 0 0 5px #fff,
+      0 0 8px #fff,
+      0 0 15px var(--neon-blue),
+      0 0 30px var(--neon-blue),
+      0 0 40px var(--neon-blue);
+  }
+
+  .neon-box-hover {
+    @apply transition-all duration-300;
+  }
+  .neon-box-hover:hover {
+    box-shadow: 0 0 3px var(--neon-blue),
+      0 0 6px var(--neon-blue),
+      0 0 12px var(--neon-blue);
+  }
+
+  .neon-border {
+    position: relative;
+  }
+
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid var(--neon-blue);
+    border-radius: inherit;
+    animation: borderGlow 2s ease-in-out infinite;
+    animation-play-state: paused;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+    box-shadow: none;
+  }
+
+  .neon-border:hover::before {
+    animation-play-state: running;
+    opacity: 1;
+  }
+
+  .cyber-grid {
+    background-image: 
+      linear-gradient(to right, rgba(0, 243, 255, 0.3) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 243, 255, 0.3) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .cyber-bg {
+    background: linear-gradient(45deg, var(--darker-bg, #050507), var(--dark-bg, #0a0a0f));
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cyber-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, transparent 20%, var(--darker-bg, #050507) 100%);
+    opacity: 0.1;
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--neon-blue),
+                0 0 10px var(--neon-blue),
+                0 0 20px var(--neon-blue);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--neon-pink),
+                0 0 20px var(--neon-pink),
+                0 0 30px var(--neon-pink);
   }
 }

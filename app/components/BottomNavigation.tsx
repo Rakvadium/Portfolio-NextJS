@@ -63,14 +63,19 @@ export default function BottomNavigation() {
             <a
               key={item.name}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-full h-full ${
+              className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
                 isActive 
-                  ? "text-blue-600 dark:text-blue-400" 
-                  : "text-gray-600 dark:text-gray-400"
+                  ? "text-blue-600 dark:text-blue-400 neon-glow-hover"
+                  : "text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 neon-glow-hover"
               }`}
               onClick={() => setActiveSection(item.href.replace("#", ""))}
             >
-              <div className="mb-1">{item.icon}</div>
+              <motion.div 
+                className="mb-1"
+                whileTap={{ scale: 0.9 }}
+              >
+                {item.icon}
+              </motion.div>
               <span className="text-xs">{item.name}</span>
             </a>
           );
