@@ -40,23 +40,8 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12"
             >
-              <div className="w-full md:w-1/2 flex flex-col items-center md:items-start">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="mb-8 md:mb-0 md:order-none order-first"
-                >
-                  <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400">
-                    <Image
-                      src="/profile.jpg"
-                      alt="Caleb Mills"
-                      fill
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                </motion.div>
+              {/* Content Column */}
+              <div className="w-full md:w-1/2 flex flex-col items-center md:items-start order-last md:order-first">
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -93,9 +78,24 @@ export default function Home() {
                   </a>
                 </motion.div>
               </div>
-              <div className="hidden md:block md:w-1/2">
-                {/* Placeholder for desktop layout balance */}
-              </div>
+
+              {/* Image Column */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="w-full md:w-1/2 flex justify-center md:justify-end order-first md:order-last"
+              >
+                <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400">
+                  <Image
+                    src="/profile.jpg"
+                    alt="Caleb Mills"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </section>
