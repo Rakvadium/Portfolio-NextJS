@@ -88,7 +88,7 @@ export default function Home() {
               >
                 <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden neon-box-hover">
                   <Image
-                    src="/profile.jpg"
+                    src="/cyberCaleb.jpg"
                     alt="Caleb Mills"
                     fill
                     className="object-cover"
