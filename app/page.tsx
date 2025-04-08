@@ -32,28 +32,44 @@ export default function Home() {
       <Navigation />
       <main className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white md:pt-20">
         {/* Profile Section */}
-        <section id="home" className="py-8 md:py-32">
+        <section id="home" className="min-h-[100vh] md:min-h-0 md:py-32 flex items-center">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="flex flex-col md:flex-row items-center justify-between gap-8"
+              className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12"
             >
-              <div className="w-full md:w-1/2 text-center md:text-left">
+              <div className="w-full md:w-1/2 flex flex-col items-center md:items-start">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="mb-8 md:mb-0 md:order-none order-first"
+                >
+                  <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400">
+                    <Image
+                      src="/profile.jpg"
+                      alt="Caleb Mills"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                </motion.div>
                 <motion.h1
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
-                  className="text-4xl md:text-5xl font-bold mb-4"
+                  className="text-4xl md:text-5xl font-bold mb-4 text-center md:text-left"
                 >
-                  Hi, I'm <span className="text-blue-600 dark:text-blue-400">Caleb Mills</span>
+                  Hi, I&apos;m <span className="text-blue-600 dark:text-blue-400">Caleb Mills</span>
                 </motion.h1>
                 <motion.p
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
-                  className="text-xl text-gray-600 dark:text-gray-300 mb-6"
+                  className="text-xl text-gray-600 dark:text-gray-300 mb-6 text-center md:text-left"
                 >
                   Full Stack Developer specializing in React, Vue, and C#
                 </motion.p>
@@ -61,44 +77,31 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
-                  className="flex flex-wrap gap-4 justify-center md:justify-start"
+                  className="flex flex-wrap gap-4 justify-center md:justify-start w-full"
                 >
                   <a
                     href="#projects"
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center"
                   >
                     View My Work
                   </a>
                   <a
                     href="#contact"
-                    className="px-6 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    className="w-full md:w-auto px-6 py-3 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-center"
                   >
                     Contact Me
                   </a>
                 </motion.div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="w-full md:w-1/2 flex justify-center"
-              >
-                <div className="relative w-48 h-48 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400">
-                  <Image
-                    src="/profile.jpg"
-                    alt="Caleb Mills"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </motion.div>
+              <div className="hidden md:block md:w-1/2">
+                {/* Placeholder for desktop layout balance */}
+              </div>
             </motion.div>
           </div>
         </section>
 
         {/* Skills Section */}
-        <section id="skills" className="py-16 md:py-20 bg-white dark:bg-gray-800">
+        <section id="skills" className="py-16 md:py-20 bg-gray-50 dark:bg-gray-800">
           <div className="container mx-auto px-4">
             <motion.div
               initial={{ opacity: 0 }}
@@ -111,7 +114,7 @@ export default function Home() {
                 {["React (Next)", "TypeScript", "ES6+", "Vue (Nuxt)", "UI/UX", "C#", ".NET", "SQL", "REST APIs", "AWS"].map((skill) => (
                   <div
                     key={skill}
-                    className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center hover:shadow-lg transition-shadow"
+                    className="p-4 bg-white dark:bg-gray-700 rounded-lg text-center hover:shadow-lg transition-shadow"
                   >
                     {skill}
                   </div>
