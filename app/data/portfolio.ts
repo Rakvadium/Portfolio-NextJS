@@ -1,18 +1,16 @@
 export const personalInfo = {
   name: "Caleb Mills",
-  initials: "CM",
   title: "Full Stack Developer",
-  tagline: "Specializing in React, Vue, and C#",
   imageUrl: "/cyberCaleb.jpg",
   github: "https://github.com/Rakvadium",
-  bio: "Fullstack Developer with 10+ years of experience crafting innovative, user-focused web and mobile applications. I specialize in React 18+, Next.js, and React Native, building real-time collaborative platforms and seamless fintech integrations that genuinely improve how teams work together and how clients interact with their tools.\n\nA passionate lifelong learner and creative problem-solver, I thrive on anticipating future needs, experimenting with new approaches, and exploring modern tools (including AI-assisted workflows) to deliver clean, high-performance solutions quickly.",
+  email: "caleb.mills.1221@proton.me",
+  bio: "Fullstack Developer with 10+ years of experience specializing in React, Next.js, and React Native.\n\nPassionate learner and creative problem-solver who enjoys anticipating needs, experimenting with new tools (including AI), and shipping clean, high-performance solutions.",
 };
 
 export const skills = [
   "React (Next)",
   "TypeScript",
   "ES6+",
-  "Vue (Nuxt)",
   "UI/UX",
   "C#",
   ".NET",
@@ -58,8 +56,8 @@ export const projects = [
 
 export const navItems = [
   { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
   { name: "Skills", href: "#skills" },
   { name: "Experience", href: "#experience" },
   { name: "Projects", href: "#projects" },
+  { name: "Contact", href: "#contact" },
 ];
