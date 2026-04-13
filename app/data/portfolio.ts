@@ -1,7 +1,7 @@
 export const personalInfo = {
   name: "Caleb Mills",
   title: "Full Stack Developer",
-  imageUrl: "/cyberCaleb.jpg",
+  imageUrl: "/calebHeadshot.jpg",
   github: "https://github.com/Rakvadium",
   email: "caleb.mills.1221@proton.me",
   bio: "Fullstack Developer with 10+ years of experience specializing in React, Next.js, and React Native.\n\nPassionate learner and creative problem-solver who enjoys anticipating needs, experimenting with new tools (including AI), and shipping clean, high-performance solutions.",
@@ -44,7 +44,7 @@ export const experience = [
 
 export const projects = [
   {
-    title: "UVSDecks.GG",
+    title: "UVSDECKS.GG",
     description:
       "A Universus card game deck-building website, built to handle interactive experiences with community members.",
     technologies: ["React", "NextJS", "TypeScript", "ConvexDB"],
