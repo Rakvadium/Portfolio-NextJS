@@ -369,10 +369,30 @@ export default function Home() {
                 custom={1}
                 className="text-base text-muted-foreground leading-relaxed mb-8 w-full max-w-none"
               >
-                Have a project in mind or want to connect? Send me an email at{" "}
-                <span className="text-foreground font-medium break-words">{personalInfo.email}</span>
-                {" "}
-                and I&apos;ll get back to you.
+                Have a project in mind or want to connect? Reach out at{" "}
+                <a
+                  href={`mailto:${personalInfo.email}`}
+                  className="text-foreground font-medium break-words hover:text-primary transition-colors"
+                >
+                  {personalInfo.email}
+                </a>
+                ,{" "}
+                <a
+                  href={`tel:${personalInfo.phone.replace(/\D/g, "")}`}
+                  className="text-foreground font-medium hover:text-primary transition-colors"
+                >
+                  {personalInfo.phone}
+                </a>
+                , or visit{" "}
+                <a
+                  href={personalInfo.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground font-medium hover:text-primary transition-colors"
+                >
+                  caleb-mills.dev
+                </a>
+                .
               </motion.p>
               <motion.div variants={fadeUp} custom={2}>
                 <ShimmerButton
@@ -485,6 +505,27 @@ function MobileNav() {
                     <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                   </svg>
                   {personalInfo.email}
+                </a>
+                <a
+                  href={`tel:${personalInfo.phone.replace(/\D/g, "")}`}
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.75"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                    aria-hidden="true"
+                  >
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  {personalInfo.phone}
                 </a>
                 <a
                   href={personalInfo.github}
