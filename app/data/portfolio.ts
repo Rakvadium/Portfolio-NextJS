@@ -1,7 +1,7 @@
 export const personalInfo = {
   name: "Caleb Mills",
   title: "Fullstack Developer",
-  imageUrl: "/calebHeadshot.jpg",
+  imageUrl: "/calebHeadshotAi.jpg",
   github: "https://github.com/Rakvadium",
   email: "caleb.mills.1221@proton.me",
   phone: "(208) 949-8754",
