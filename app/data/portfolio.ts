@@ -57,6 +57,15 @@ export const experience = [
 
 export const projects = [
   {
+    title: "GenHealthAZ",
+    description:
+      "A modern rebuild of GenHealth’s outpatient mental health clinic site — psychiatry, therapy, TMS, and Spravato care across Arizona and Idaho, with a Convex-backed CMS.",
+    technologies: ["React", "NextJS", "TypeScript", "ConvexDB"],
+    imageUrl: "/genhealthaz.png",
+    projectUrl: "https://gen-health-az.vercel.app",
+    githubUrl: "https://github.com/Rakvadium/GenHealthAz",
+  },
+  {
     title: "UVSDECKS.GG",
     description:
       "A Universus card game deck-building website, built to handle interactive experiences with community members.",
