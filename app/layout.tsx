@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Caleb Mills | Fullstack Developer",
+  title: "Caleb Mills | Senior Frontend Engineer",
   description:
-    "Portfolio website showcasing my skills and projects as a full stack developer.",
+    "Caleb Mills is a frontend skewed software engineer in Meridian, ID with 9+ years of experience in React, TypeScript, Next.js, and Node.js.",
 };
 
 export default function RootLayout({
