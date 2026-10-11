@@ -1,56 +1,76 @@
 export const personalInfo = {
   name: "Caleb Mills",
-  title: "Fullstack Developer",
+  title: "Senior Frontend Engineer",
   imageUrl: "/calebHeadshotAi.jpg",
   github: "https://github.com/Rakvadium",
+  linkedin: "https://www.linkedin.com/in/calebmills1",
   email: "caleb.mills.1221@proton.me",
   phone: "(208) 949-8754",
-  website: "https://caleb-mills.dev",
-  bio: `Fullstack Developer with 10+ years of experience crafting innovative, user-focused web and mobile applications from the ground up. I specialize in React 18+, Next.js, TypeScript, and Node.js, building real-time collaborative platforms and seamless fintech integrations that eliminate tedious manual tasks, accelerate team productivity, and let mortgage professionals stay focused on high-value work.
+  website: "https://www.caleb-mills.dev",
+  location: "Meridian, ID",
+  bio: `I'm a frontend skewed software engineer with 9+ years of experience. I obsess over intuitive UI and UX, and I also build the solid backends and APIs behind them.
 
-As a passionate lifelong learner and creative problem-solver, I thrive on anticipating future needs, experimenting with new approaches, and exploring modern tools (including AI-assisted workflows) to deliver clean, high-performance solutions quickly. I stay current with cutting-edge technologies by regularly rebuilding personal projects with new frameworks and concepts.`,
+I work mostly in React, TypeScript, Next.js, and Node.js. Outside of work I build and run UVSDecks.gg, a deck builder and community site for the UniVersus card game. I use AI coding agents every day, and I spend a lot of time validating what they build.`,
 };
 
 export const skills = [
-  "React (Next.js)",
   "TypeScript",
-  "UI/UX",
-  "AI Native",
-  "C#/.NET",
-  "SQL",
-  "REST APIs",
-  "AWS",
-  "Vue/Nuxt",
-  "Angular",
+  "React",
+  "Next.js",
   "Node.js",
+  "SQL",
+  "UI/UX",
+  "C#/.NET",
+  "REST APIs",
+  "Vue/Nuxt",
+  "AWS",
+  "Azure",
   "React Native",
 ];
 
 export const experience = [
   {
-    role: "Software Developer",
+    role: "Senior Full-Stack Engineer",
     company: "KensieMae, LLC",
     location: "Remote",
-    period: "August 2023 \u2013 Present",
+    period: "August 2023 to October 2026",
     bullets: [
-      "Independently designed, architected, and built the complete React frontend (plus significant backend contributions) for the groundbreaking \u201cConnector\u201d data-bridge automation platform \u2014 a flexible, generic mapping system connecting any data sources to any targets. Served ~80 clients, automated complex compliance and workflow processes that previously required 10\u201330+ hours of manual effort per loan, earned consistent praise for intuitive UI/UX, became the primary revenue driver, and was a key factor in Velma\u2019s acquisition by KensieMae.",
-      "Architected internal npm/npx scaffolding tool and migration framework that standardized web-plugin development; enabled migration of 75+ legacy desktop Encompass plugins to modern web architecture in ~6 months (versus estimated 12 months), saving the 12-person development team roughly $700K in effort and allowing focus on higher-priority features.",
-      "Engineered multiple B2B data-mapping and automation platforms (including Total Expert Fusion and GNB FIS CodeConnect Horizon) that synchronized loan data between Loan Origination Systems (Empower/Encompass) and CRM/core banking platforms, eliminating hours of manual re-keying per loan and preventing stale data through scheduled + webhook-driven syncs.",
-      "Designed, developed, and maintained high-performance full-stack web applications using React 18+, TypeScript, Vue/Nuxt, and C#/.NET that streamlined mortgage professionals\u2019 workflows and dramatically reduced manual data entry and compliance work.",
+      "Kept ownership of Connector after the acquisition and continued building out its React frontend as it served about 80 clients.",
+      "Built B2B integration platforms that keep data in sync between systems with scheduled jobs and webhooks.",
+      "Rebuilt a legacy email and print template builder in Vue and GrapesJS, embedded inside the older AngularJS app instead of a full rewrite.",
+      "Stayed on a product rebrand as teammates were reassigned to other priorities, and took on more of the work: planned it, reviewed pull requests for 3 engineers, drove testing, and got new developers up to speed on the codebase.",
+      "Moved auto-campaign execution from a standalone AWS EC2 server to Azure App Service WebJobs, and kept the hybrid Azure and AWS link to the Velma Fulfillment Service (VFS) marketing engine working.",
     ],
   },
   {
-    role: "Software Developer",
+    role: "Senior Software Engineer",
     company: "Velma.com",
     location: "Nampa, Idaho",
-    period: "July 2015 \u2013 August 2023",
+    period: "January 2022 to August 2023",
     bullets: [
-      "Designed, built, and maintained scalable microservices using Node.js, TypeScript, and C#/.NET that powered the VFS marketing engine, enabling high-volume automated marketing campaigns and improving platform reliability.",
-      "Configured and optimized AWS infrastructure (API Gateway, CloudFront, S3, Lambda, DynamoDB, CodePipeline, ECS, etc.) and implemented robust CI/CD pipelines with manual approval gates, ensuring identical code deploys from test to production and accelerating reliable releases across the platform.",
-      "Created micro-frontend components (using module federation) for the VFS Jobs interface as a proof-of-concept, allowing seamless transplantation into other applications (Velma CRM, Connector) and laying groundwork for client-facing embeddable components.",
-      "Developed and evolved a full-stack CRM and automation platform using C#, React, Angular, Node.js, and JavaScript, delivering ongoing enhancements that strengthened client relationships and improved daily mortgage operations.",
-      "Delivered polished, intuitive user interfaces and smooth UX flows across all products that consistently earned positive client feedback and praise for design quality and usability.",
-      "Contributed to long-term platform modernization and feature development that supported significant business growth, culminating in the successful acquisition by KensieMae, LLC in 2023.",
+      "Owned the frontend on our 4-person team and set its architecture.",
+      "Shipped our first micro-frontend component with Module Federation to 4 host apps: a job tracker for email, print, and SMS jobs that releases on its own cycle without redeploying the apps that use it.",
+      "Designed a per-client, per-role feature entitlement model in the Account Service that controls which apps, components, and views each user sees, and set up the data foundation for tiered, per-feature pricing.",
+    ],
+  },
+  {
+    role: "Software Engineer",
+    company: "Velma.com",
+    location: "Nampa, Idaho",
+    period: "August 2017 to January 2022",
+    bullets: [
+      "Designed and built the complete React frontend for Connector, a data-bridge platform. It grew to about 80 clients, automated work that used to take 10 to 30+ hours by hand per case, became a primary revenue driver, and was a key factor in Velma\u2019s acquisition by KensieMae.",
+      "Built Node.js/TypeScript and C#/.NET microservices for the VFS marketing engine, which ran high-volume automated campaigns.",
+      "Set up AWS infrastructure (API Gateway, CloudFront, S3, Lambda, DynamoDB, ECS) and CodePipeline CI/CD with approval gates, so the same build moved from test to production.",
+    ],
+  },
+  {
+    role: "Auto-Campaign Specialist",
+    company: "Velma.com",
+    location: "Nampa, Idaho",
+    period: "July 2015 to August 2017",
+    bullets: [
+      "Built and tested automated marketing campaigns and wrote custom JavaScript for dynamic email and print templates, then moved into an engineering role.",
     ],
   },
 ];
@@ -59,16 +79,15 @@ export const projects = [
   {
     title: "GenHealthAZ",
     description:
-      "A modern rebuild of GenHealth’s outpatient mental health clinic site — psychiatry, therapy, TMS, and Spravato care across Arizona and Idaho, with a Convex-backed CMS.",
+      "Rebuilt and launched GenHealth\u2019s outpatient mental health clinic site, covering psychiatry, therapy, TMS (transcranial magnetic stimulation), and Spravato care across Arizona and Idaho, with a Convex-backed CMS.",
     technologies: ["React", "NextJS", "TypeScript", "ConvexDB"],
     imageUrl: "/genhealthaz.png",
-    projectUrl: "https://gen-health-az.vercel.app",
-    githubUrl: "https://github.com/Rakvadium/GenHealthAz",
+    projectUrl: "https://www.genhealthaz.com",
   },
   {
     title: "UVSDECKS.GG",
     description:
-      "A Universus card game deck-building website, built to handle interactive experiences with community members.",
+      "A deck builder and community site for the UniVersus card game, with real-time team deck editing and a card import pipeline that pulls card data out of images with GPT-4o vision and sends it to a human review queue.",
     technologies: ["React", "NextJS", "TypeScript", "ConvexDB"],
     imageUrl: "/project1.png",
     projectUrl: "https://www.uvsdecks.gg",
