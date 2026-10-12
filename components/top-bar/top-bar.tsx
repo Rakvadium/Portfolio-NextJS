@@ -1,6 +1,27 @@
+// Fixed header: brand (monogram + scroll-handoff name), section navigation, always-visible social
+// icon links, and the scroll progress line. Client islands: SectionNavigation, BrandReveal, ScrollProgress.
 import type { Brand, Channel, SectionView } from "@/app/data/site";
-// Stub until its unit lands.
-export function TopBar(props: { brand: Brand; sections: readonly SectionView[]; social: readonly Channel[] }) {
-  void props;
-  return null;
+import { BrandMark } from "./brand-mark";
+import { ScrollProgress } from "./scroll-motion";
+import { SectionNavigation } from "./section-navigation";
+import { SocialLinks } from "./social-links";
+
+export type TopBarProps = {
+  brand: Brand;
+  sections: readonly [SectionView, ...SectionView[]];
+  social: readonly Channel[];
+};
+
+export function TopBar({ brand, sections, social }: TopBarProps) {
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.07] bg-canvas/75 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6">
+        <BrandMark brand={brand} />
+        <SectionNavigation sections={sections}>
+          <SocialLinks channels={social} />
+        </SectionNavigation>
+      </div>
+      <ScrollProgress />
+    </header>
+  );
 }

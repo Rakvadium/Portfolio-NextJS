@@ -103,7 +103,7 @@ export type FooterView = { readonly copyright: string; readonly tagline: string 
 
 export type Site = {
   readonly meta: { readonly title: string; readonly description: string };
-  readonly sections: readonly SectionView[];
+  readonly sections: readonly [SectionView, ...SectionView[]];
   readonly brand: Brand;
   /** Top-bar icon buttons, in display order: GitHub, LinkedIn, Email. */
   readonly social: readonly Channel[];
@@ -208,7 +208,7 @@ export function buildSite(c: Content, today: YearMonth): Site {
       title: `${profile.name} | ${profile.title}`,
       description: `${profile.name} is a frontend-skewed software engineer in ${profile.location} with ${years} of experience in ${listToSentence(c.coreStack)}.`,
     },
-    sections: sections.map((s) => ({ id: s.id, label: s.label, href: `#${s.id}` as const, heading: headings[s.id] })),
+    sections: mapNonEmpty<(typeof sections)[number], SectionView>(sections, (s) => ({ id: s.id, label: s.label, href: `#${s.id}` as const, heading: headings[s.id] })),
     brand: { name: profile.name, title: profile.title, monogram: initials(profile.name) },
     social: [github, linkedin, email],
     hero: {

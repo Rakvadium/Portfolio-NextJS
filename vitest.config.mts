@@ -12,6 +12,8 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const executablePath = process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
 export default defineConfig({
+  // Pre-bundle up front: discovering these mid-run makes Vite reload the test page.
+  optimizeDeps: { include: ["framer-motion", "lucide-react", "clsx", "tailwind-merge"] },
   test: {
     projects: [
       {
