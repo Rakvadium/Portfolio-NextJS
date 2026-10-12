@@ -40,6 +40,13 @@
   color: transparent;
 }
 
+/* Backdrop dot grid, fading out from the top center. */
+@utility backdrop-dots {
+  background-image: radial-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
+}
+
 @layer base {
   html {
     /* The fixed top bar is h-16 (+1px progress). Native hash navigation lands below it and the URL
