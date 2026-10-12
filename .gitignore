@@ -36,3 +36,10 @@ next-env.d.ts
 
 # verification runs keep proof locally; cleanup must not delete this directory
 .cursor/skills/verify-portfolio/artifacts/
+
+# storybook
+storybook-static/
+*storybook.log
+
+# proof captures from scripts/capture.mjs
+/captures/

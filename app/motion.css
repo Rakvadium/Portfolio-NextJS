@@ -1,0 +1,68 @@
+/* Motion on the page uses two mechanisms with disjoint jobs. Do not use both for one job.
+ *
+ * 1. Scroll-position-linked values: framer-motion (useScroll + useTransform) in small client islands.
+ *    The hero name -> top-bar handoff (components/hero/scroll-motion.tsx, components/top-bar/scroll-motion.tsx),
+ *    the portrait parallax, and the progress line. Framer works in every evergreen browser, which CSS
+ *    scroll timelines do not (Firefox). Their motion values start at the at-top pose on server and client,
+ *    so hydration matches. Transforms carry `motion-static`, which the rule below cancels for
+ *    reduced-motion users; opacity (the handoff fade) and the progress line still run for them, as in G.
+ *    No component reads the media query in JS.
+ *
+ * 2. Entrances on load and reveals as a tile scrolls into view: CSS, in this file.
+ *    The server HTML is the final, visible pose. Animations only move *from* an offset *to* that pose,
+ *    and every one sits inside `prefers-reduced-motion: no-preference`. Reveals also sit inside
+ *    `@supports (animation-timeline: view())`; browsers without it get static, visible content.
+ *
+ * Shared-layout springs (nav underline, role pill), the role panel crossfade, the accordion height,
+ * and the mobile menu mount/unmount are framer too, inside <MotionConfig reducedMotion="user">.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-static {
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes motion-enter {
+    from {
+      translate: 0 12px;
+      scale: 0.99;
+    }
+  }
+  @keyframes motion-enter-fade {
+    from {
+      opacity: 0;
+      scale: 0.97;
+    }
+  }
+  @keyframes motion-draw-x {
+    from {
+      scale: 0 1;
+    }
+  }
+  .motion-enter {
+    animation: motion-enter 500ms var(--ease-out-expo) both;
+  }
+  .motion-enter-fade {
+    animation: motion-enter-fade 600ms var(--ease-out-expo) both;
+  }
+  .motion-draw-x {
+    transform-origin: left;
+    animation: motion-draw-x 600ms 100ms var(--ease-out-expo) both;
+  }
+
+  @supports (animation-timeline: view()) {
+    @keyframes motion-reveal {
+      from {
+        opacity: 0;
+        translate: 0 16px;
+      }
+    }
+    .motion-reveal {
+      animation: motion-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
