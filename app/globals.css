@@ -47,6 +47,16 @@
   mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
 }
 
+/* The magenta-to-coral glow in the contact tile's corner. */
+@utility contact-glow {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-magenta) 28%, transparent),
+    color-mix(in srgb, var(--color-coral) 10%, transparent) 55%,
+    transparent 70%
+  );
+}
+
 @layer base {
   html {
     /* The fixed top bar is h-16 (+1px progress). Native hash navigation lands below it and the URL
