@@ -29,9 +29,8 @@ Preconditions:
 - **LinkedIn.** Run `control-portfolio browser href --role link --name "LinkedIn"`. `hrefAttr` is `https://www.linkedin.com/in/calebmills1`.
 - **Button.** Run `control-portfolio browser see --role button --name "Contact Me"` and `control-portfolio browser motion`. The button prints `visible: true`. Record `reducedMotion`.
 - **Before the burst.** Run `control-portfolio browser canvases`. It prints `canvases: 0`.
-- **Activate.** Choose Contact Me. Run `control-portfolio browser click --role button --name "Contact Me"` and `control-portfolio browser location`. The URL starts with `mailto:caleb.mills.1221@proton.me`.
-- **Confetti.** If the URL is still on the portfolio, run `control-portfolio browser canvases`. When `reducedMotion` is false, `canvases` is at least 1. When `reducedMotion` is true, the burst is skipped and `canvases` stays 0.
-- **Proof.** If the browser stayed on the portfolio, capture the section. Run `control-portfolio browser snapshot --aria --feature contact --entry desktop-nav --path artifacts/contact/desktop-nav.aria.txt` and `control-portfolio browser screenshot --feature contact --entry desktop-nav --path artifacts/contact/desktop-nav.png`. The snapshot contains `Caleb Mills`, `Contact Me`, `caleb.mills.1221@proton.me`, and `Meridian, ID`. If the browser followed the mailto URL, the location line is the proof of the click and `control-portfolio browser open` is required before the next feature.
+- **Activate.** Choose Contact Me. Run `control-portfolio browser click --role button --name "Contact Me"`, `control-portfolio browser location`, and `control-portfolio browser canvases`. Headless Chrome stays on `http://127.0.0.1:<port>/#contact` and, when `reducedMotion` is false, `canvases` is at least 1. When `reducedMotion` is true, `canvases` stays 0. A browser with a mail handler instead reports a URL starting with `mailto:caleb.mills.1221@proton.me`.
+- **Proof.** When the browser stayed on the portfolio, capture the section. Run `control-portfolio browser snapshot --aria --feature contact --entry desktop-nav --path artifacts/contact/desktop-nav.aria.txt` and `control-portfolio browser screenshot --feature contact --entry desktop-nav --path artifacts/contact/desktop-nav.png`. The snapshot contains `Caleb Mills`, `Contact Me`, `caleb.mills.1221@proton.me`, and `Meridian, ID`. When the browser left for a mailto URL, that location line is the click proof and `control-portfolio browser open` is required before the next feature.
 
 ## Gotchas
 
@@ -39,5 +38,5 @@ Preconditions:
 - The top-bar mail icon is named `Email caleb.mills.1221@proton.me`, not the bare address. The address link in the contact copy is the one this recipe reads.
 - The LinkedIn icon in the bar is named `LinkedIn profile`. The word `LinkedIn` in the contact paragraph is the link this recipe reads.
 - While the mobile drawer is open, the email, phone, and LinkedIn names occur twice. Drive this recipe at 1280×800 with the drawer closed.
-- Contact Me does not send an email. The side effect is the `mailto:` location, plus a canvas when the browser is not reducing motion.
-- After a mailto navigation, doctor is `not-ok` until `browser open` loads the portfolio again.
+- Contact Me does not send an email. Headless Chrome shows the confetti canvas and stays on `#contact`. A mail handler navigates to `mailto:caleb.mills.1221@proton.me` instead of showing the canvas.
+- After a mailto navigation, doctor is `not-ok` until `browser open` loads the portfolio again. A canvas-only result leaves doctor `ok`.

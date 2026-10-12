@@ -473,15 +473,17 @@ async function nodeGeometry(cdp, backendNodeId) {
       objectId,
       returnByValue: true,
       functionDeclaration: `function() {
-        const rect = this.getBoundingClientRect();
+        const el = this.nodeType === 1 ? this : this.parentElement;
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
         let opacity = 1;
-        let el = this;
-        while (el) {
-          const value = parseFloat(getComputedStyle(el).opacity);
+        let node = el;
+        while (node) {
+          const value = parseFloat(getComputedStyle(node).opacity);
           if (!Number.isNaN(value)) opacity *= value;
-          el = el.parentElement;
+          node = node.parentElement;
         }
-        const style = getComputedStyle(this);
+        const style = getComputedStyle(el);
         return {
           opacity,
           display: style.display,
@@ -584,7 +586,7 @@ async function resolveMatch(cdp, flags, { requireUnique }) {
   return { match: detailed[index], index, count: detailed.length, all: detailed };
 }
 
-async function setViewport(cdp, width, height) {
+async function applyViewport(cdp, width, height) {
   await cdp.send("Emulation.setDeviceMetricsOverride", {
     width,
     height,
@@ -597,6 +599,36 @@ async function setViewport(cdp, width, height) {
     expression: "new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
     awaitPromise: true,
   });
+}
+
+async function breakpointMatches(cdp, width) {
+  const evaluated = await cdp.send("Runtime.evaluate", {
+    expression: "window.matchMedia('(min-width: 768px)').matches",
+    returnByValue: true,
+  });
+  return evaluated.result.value === width >= 768;
+}
+
+async function setViewport(cdp, width, height) {
+  const facts = await pageFacts(cdp);
+  const already = facts.width === width && facts.height === height && (await breakpointMatches(cdp, width));
+  if (already) return;
+  const { windowId } = await cdp.send("Browser.getWindowForTarget");
+  let extraHeight = 0;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await cdp.send("Browser.setWindowBounds", {
+      windowId,
+      bounds: { width, height: height + extraHeight, windowState: "normal" },
+    });
+    await sleep(50);
+    const sized = await pageFacts(cdp);
+    if (sized.width === width && sized.height >= height) break;
+    extraHeight += Math.max(height - sized.height, 1);
+  }
+  await applyViewport(cdp, width, height);
+  if (!(await breakpointMatches(cdp, width))) {
+    throw fail(`viewport ${width}x${height} did not update the desktop breakpoint`);
+  }
 }
 
 async function navigateTo(cdp, url, timeoutMs) {
@@ -921,6 +953,9 @@ async function openPage(state, hash, waitHeading) {
     cdp.debugPort = state.debugPort;
     await navigateTo(cdp, target, 30000);
     await setViewport(cdp, 1280, 800);
+    state.viewportWidth = 1280;
+    state.viewportHeight = 800;
+    writeState(state);
     if (!state.pageId) {
       state.pageId = cdp.pageId;
       writeState(state);
@@ -1010,6 +1045,9 @@ async function browser(port, argv) {
   }
   await withCdp(state, async (cdp) => {
     cdp.debugPort = state.debugPort;
+    if (state.viewportWidth && state.viewportHeight && sub !== "viewport") {
+      await setViewport(cdp, state.viewportWidth, state.viewportHeight);
+    }
     if (sub === "viewport") {
       const width = Number(requireFlag(flags, "width"));
       const height = Number(requireFlag(flags, "height"));
@@ -1017,6 +1055,9 @@ async function browser(port, argv) {
         throw fail("viewport width and height must be integers >= 320");
       }
       await setViewport(cdp, width, height);
+      state.viewportWidth = width;
+      state.viewportHeight = height;
+      writeState(state);
       const facts = await pageFacts(cdp);
       console.log(`viewport: ${facts.width}x${facts.height}`);
       return;

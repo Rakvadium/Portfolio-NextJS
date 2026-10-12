@@ -64,7 +64,7 @@ Auth is `none`. A scrolled section is still healthy: doctor does not require the
 
 Prefer accessible roles and names over CSS selectors, coordinates, and tab order. Roles used by the recipes are `link`, `button`, `heading`, and `image`. Names are exact and case-sensitive.
 
-`browser open` loads the portfolio and then forces a 1280×800 viewport. Set the viewport after every `open` when the recipe needs a different size. Desktop recipes use `1280`×`800`. Mobile recipes use `390`×`844`. The desktop nav is `display: none` below 768px. The mobile menu button is `display: none` at 768px and above.
+`browser open` loads the portfolio and then forces a 1280×800 viewport. Set the viewport after every `open` when the recipe needs a different size. Desktop recipes use `1280`×`800`. Mobile recipes use `390`×`844`. The viewport command resizes the Chrome window, so the width persists after the command exits. Later commands reapply the saved size. The desktop nav is `display: none` below 768px. The mobile menu button is `display: none` at 768px and above.
 
 When more than one node shares a role and name, `click` and `href` exit 1 until you pass `--nth`. `--nth` is 1-based DOM order among nodes still exposed to the accessibility tree. On a desktop viewport, `Experience` and `Contact` each match twice: nth 1 is the top bar, nth 2 is the hero button. `browser open` without `--hash` waits until the hero heading is visible. `browser open --hash projects` loads `/#projects` and returns when the hash matches; the recipe then waits for the section heading.
 
@@ -80,7 +80,7 @@ A proof exercises the page in Chrome. Do not set React state, do not treat `app/
 
 Visible results are headings, link names, and section copy. Side effects this app can produce are the URL hash, a mobile menu that mounts or unmounts links, a new tab URL when an outbound link is clicked, a `mailto:` navigation, and a confetti canvas. There is no database row and no sent message to inspect. Outbound origins (GenHealthAZ, UVSDECKS.GG, GitHub, LinkedIn) are outside the portfolio: record `hrefAttr` from the link the visitor would activate. A failure to load that origin is not a portfolio failure. Do not click those origins unless the feature file says to, and close extra tabs with `browser close-extra` afterward.
 
-There is no dry-run mode. Contact Me does not send mail. It sets the location to `mailto:caleb.mills.1221@proton.me` and fires confetti unless the browser prefers reduced motion. Read `browser location`, `browser motion`, and `browser canvases` after the click. Trust those observations, not the button label.
+There is no dry-run mode. Contact Me does not send mail. The click fires confetti unless the browser prefers reduced motion, and it assigns `mailto:caleb.mills.1221@proton.me` to the location. Headless Chrome has no mail handler, so the location stays on the contact section and `browser canvases` becomes at least 1. A browser that does hand off to a mail client leaves the page with a `mailto:` URL instead. Read `browser location`, `browser motion`, and `browser canvases` after the click. Trust those observations, not the button label.
 
 ## Cleanup
 
