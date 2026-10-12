@@ -1,0 +1,1229 @@
+#!/usr/bin/env node
+"use strict";
+
+const { spawn, spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+
+const REPO = path.resolve(__dirname, "../../../..");
+const SKILL_DIR = path.join(REPO, ".cursor/skills/verify-portfolio");
+const HOSTNAME = "127.0.0.1";
+const TITLE = "Caleb Mills | Senior Frontend Engineer";
+const HERO_HEADING = "Caleb Mills";
+
+function fail(message) {
+  const error = new Error(message);
+  error.operational = true;
+  return error;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+function packageInfo() {
+  const pkgPath = path.join(REPO, "package.json");
+  if (!fs.existsSync(pkgPath)) {
+    throw fail(`package.json not found at ${pkgPath}`);
+  }
+  const pkg = readJson(pkgPath);
+  if (pkg.name !== "portfolio") {
+    throw fail(`expected package name portfolio at ${REPO}, found ${pkg.name}`);
+  }
+  const nextPkgPath = path.join(REPO, "node_modules/next/package.json");
+  if (!fs.existsSync(nextPkgPath)) {
+    throw fail("next is not installed. From the repo root run: npm install");
+  }
+  const nextPkg = readJson(nextPkgPath);
+  return { packageVersion: pkg.version, nextVersion: nextPkg.version };
+}
+
+function gitSha() {
+  const result = spawnSync("git", ["rev-parse", "HEAD"], {
+    cwd: REPO,
+    encoding: "utf8",
+  });
+  if (result.status !== 0) return "unknown";
+  return result.stdout.trim() || "unknown";
+}
+
+function evidenceDir() {
+  return process.env.PORTFOLIO_VERIFY_EVIDENCE
+    ? path.resolve(process.env.PORTFOLIO_VERIFY_EVIDENCE)
+    : path.join(SKILL_DIR, "artifacts");
+}
+
+function resolveEvidence(inputPath) {
+  if (path.isAbsolute(inputPath)) return path.resolve(inputPath);
+  const relative = inputPath.startsWith("artifacts/")
+    ? inputPath.slice("artifacts/".length)
+    : inputPath;
+  const resolved = path.resolve(evidenceDir(), relative);
+  const root = path.resolve(evidenceDir());
+  if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+    throw fail(`evidence path escapes ${root}: ${inputPath}`);
+  }
+  return resolved;
+}
+
+function stateDir(port) {
+  return path.join("/tmp/portfolio-verify", String(port));
+}
+
+function statePath(port) {
+  return path.join(stateDir(port), "state.json");
+}
+
+function readState(port) {
+  const file = statePath(port);
+  if (!fs.existsSync(file)) {
+    throw fail(
+      `no verification state at ${file}. Run: .cursor/skills/verify-portfolio/scripts/control-portfolio launch`
+    );
+  }
+  const state = readJson(file);
+  if (state.repo !== REPO) {
+    throw fail(`port ${port} is in use by ${state.repo}, not ${REPO}`);
+  }
+  return state;
+}
+
+function writeState(state) {
+  fs.mkdirSync(stateDir(state.port), { recursive: true });
+  const file = statePath(state.port);
+  const tmp = `${file}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2) + "\n");
+  fs.renameSync(tmp, file);
+}
+
+function cmdline(pid) {
+  try {
+    return fs.readFileSync(`/proc/${pid}/cmdline`).toString("utf8").replace(/\0/g, " ").trim();
+  } catch {
+    return "";
+  }
+}
+
+function procStat(pid) {
+  const raw = fs.readFileSync(`/proc/${pid}/stat`, "utf8");
+  const rest = raw.slice(raw.lastIndexOf(")") + 2).split(" ");
+  return {
+    pid: Number(pid),
+    state: rest[0],
+    ppid: Number(rest[1]),
+    pgid: Number(rest[2]),
+  };
+}
+
+function alive(pid) {
+  if (!pid) return false;
+  try {
+    process.kill(Number(pid), 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isDescendant(pid, ancestor) {
+  let current = Number(pid);
+  const seen = new Set();
+  while (current > 1 && !seen.has(current)) {
+    if (current === Number(ancestor)) return true;
+    seen.add(current);
+    try {
+      current = procStat(current).ppid;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function descendants(root) {
+  const kids = [];
+  for (const entry of fs.readdirSync("/proc")) {
+    if (!/^\d+$/.test(entry)) continue;
+    const pid = Number(entry);
+    if (pid === Number(root)) continue;
+    try {
+      if (isDescendant(pid, root)) kids.push(pid);
+    } catch {
+      // Process exited while scanning.
+    }
+  }
+  return kids;
+}
+
+function listenerPids(port) {
+  const inodes = new Set();
+  for (const file of ["/proc/net/tcp", "/proc/net/tcp6"]) {
+    let text;
+    try {
+      text = fs.readFileSync(file, "utf8");
+    } catch {
+      continue;
+    }
+    for (const line of text.trim().split("\n").slice(1)) {
+      const parts = line.trim().split(/\s+/);
+      const local = parts[1];
+      const hexPort = local.slice(local.lastIndexOf(":") + 1);
+      if (parseInt(hexPort, 16) === port && parts[3] === "0A") {
+        inodes.add(parts[9]);
+      }
+    }
+  }
+  if (inodes.size === 0) return [];
+  const pids = [];
+  for (const entry of fs.readdirSync("/proc")) {
+    if (!/^\d+$/.test(entry)) continue;
+    let fds;
+    try {
+      fds = fs.readdirSync(`/proc/${entry}/fd`);
+    } catch {
+      continue;
+    }
+    for (const fd of fds) {
+      let target;
+      try {
+        target = fs.readlinkSync(`/proc/${entry}/fd/${fd}`);
+      } catch {
+        continue;
+      }
+      if (target.startsWith("socket:[") && inodes.has(target.slice(8, -1))) {
+        pids.push(Number(entry));
+        break;
+      }
+    }
+  }
+  return pids;
+}
+
+function repoDevServers() {
+  const hits = [];
+  for (const entry of fs.readdirSync("/proc")) {
+    if (!/^\d+$/.test(entry)) continue;
+    let cwd = "";
+    try {
+      cwd = fs.readlinkSync(`/proc/${entry}/cwd`);
+    } catch {
+      continue;
+    }
+    if (cwd !== REPO) continue;
+    const cmd = cmdline(entry);
+    if (cmd.includes("next dev") || cmd.startsWith("next-server")) {
+      hits.push({ pid: Number(entry), cmd });
+    }
+  }
+  return hits;
+}
+
+function selectedPort(flagPort) {
+  const raw = flagPort || process.env.PORTFOLIO_VERIFY_PORT || "3100";
+  const port = Number(raw);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw fail(`invalid port: ${raw}`);
+  }
+  return port;
+}
+
+function extractGlobal(argv) {
+  const rest = [];
+  let port;
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === "--port") {
+      port = argv[i + 1];
+      i += 1;
+      if (port === undefined) throw fail("--port requires a value");
+    } else {
+      rest.push(argv[i]);
+    }
+  }
+  return { argv: rest, port: selectedPort(port) };
+}
+
+function parseFlags(argv) {
+  const flags = { _: [] };
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i];
+    if (token.startsWith("--")) {
+      const key = token.slice(2);
+      const next = argv[i + 1];
+      if (next === undefined || next.startsWith("--")) {
+        flags[key] = true;
+      } else {
+        flags[key] = next;
+        i += 1;
+      }
+    } else {
+      flags._.push(token);
+    }
+  }
+  return flags;
+}
+
+function requireFlag(flags, name) {
+  if (flags[name] === undefined || flags[name] === true) {
+    throw fail(`--${name} requires a value`);
+  }
+  return flags[name];
+}
+
+function optionalNth(flags) {
+  if (flags.nth === undefined) return null;
+  const nth = Number(flags.nth);
+  if (!Number.isInteger(nth) || nth < 1) throw fail(`--nth must be a positive integer, got ${flags.nth}`);
+  return nth;
+}
+
+function chromeBin() {
+  if (process.env.PORTFOLIO_VERIFY_CHROME) return process.env.PORTFOLIO_VERIFY_CHROME;
+  const found = spawnSync("sh", ["-c", "command -v google-chrome"], { encoding: "utf8" });
+  const bin = (found.stdout || "").trim();
+  if (!bin) {
+    throw fail("google-chrome is not on PATH. Set PORTFOLIO_VERIFY_CHROME to the Chrome binary.");
+  }
+  return bin;
+}
+
+function tail(file, maxLines) {
+  if (!fs.existsSync(file)) return "";
+  const lines = fs.readFileSync(file, "utf8").split("\n");
+  return lines.slice(-maxLines).join("\n");
+}
+
+function killTree(pid, signal) {
+  if (!alive(pid)) return;
+  for (const child of descendants(pid)) {
+    try {
+      process.kill(child, signal);
+    } catch {
+      // Already gone.
+    }
+  }
+  try {
+    const stat = procStat(pid);
+    if (stat.pgid === Number(pid)) process.kill(-Number(pid), signal);
+  } catch {
+    // Not a process-group leader.
+  }
+  try {
+    process.kill(Number(pid), signal);
+  } catch {
+    // Already gone.
+  }
+}
+
+async function waitUntilDead(pid, timeoutMs) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (!alive(pid)) return true;
+    await sleep(100);
+  }
+  return !alive(pid);
+}
+
+class Cdp {
+  constructor(ws) {
+    this.ws = ws;
+    this.nextId = 1;
+    this.pending = new Map();
+    this.listeners = [];
+    ws.addEventListener("message", (event) => {
+      const message = JSON.parse(event.data);
+      if (message.id && this.pending.has(message.id)) {
+        const { resolve, reject, timer } = this.pending.get(message.id);
+        clearTimeout(timer);
+        this.pending.delete(message.id);
+        if (message.error) reject(fail(`CDP ${message.error.message}`));
+        else resolve(message.result || {});
+      } else if (message.method) {
+        for (const listener of this.listeners) listener(message);
+      }
+    });
+  }
+
+  send(method, params = {}, timeoutMs = 20000) {
+    const id = this.nextId;
+    this.nextId += 1;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(fail(`CDP timeout: ${method}`));
+      }, timeoutMs);
+      this.pending.set(id, { resolve, reject, timer });
+      this.ws.send(JSON.stringify({ id, method, params }));
+    });
+  }
+
+  waitFor(method, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this.listeners = this.listeners.filter((listener) => listener !== onMessage);
+        reject(fail(`timed out waiting for ${method}`));
+      }, timeoutMs);
+      const onMessage = (message) => {
+        if (message.method !== method) return;
+        clearTimeout(timer);
+        this.listeners = this.listeners.filter((listener) => listener !== onMessage);
+        resolve(message.params || {});
+      };
+      this.listeners.push(onMessage);
+    });
+  }
+
+  close() {
+    try {
+      this.ws.close();
+    } catch {
+      // Socket already closed.
+    }
+  }
+}
+
+async function enableDomains(cdp) {
+  await cdp.send("Page.enable");
+  await cdp.send("Runtime.enable");
+  await cdp.send("DOM.enable");
+  await cdp.send("Accessibility.enable");
+  await cdp.send("DOM.getDocument", { depth: 0 });
+}
+
+async function connectCdp(wsUrl) {
+  const ws = new WebSocket(wsUrl);
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      ws.close();
+      reject(fail(`CDP websocket timeout for ${wsUrl}`));
+    }, 10000);
+    ws.addEventListener("open", () => {
+      clearTimeout(timer);
+      resolve();
+    });
+    ws.addEventListener("error", () => {
+      clearTimeout(timer);
+      reject(fail(`CDP websocket failed for ${wsUrl}`));
+    });
+  });
+  return new Cdp(ws);
+}
+
+async function listTargets(debugPort) {
+  const response = await fetch(`http://${HOSTNAME}:${debugPort}/json/list`);
+  if (!response.ok) throw fail(`chrome debug port ${debugPort} returned ${response.status}`);
+  return response.json();
+}
+
+async function connectState(state) {
+  if (!alive(state.chromePid)) {
+    throw fail("chrome is not running. Run cleanup, then launch.");
+  }
+  const targets = await listTargets(state.debugPort);
+  const pages = targets.filter((target) => target.type === "page");
+  const page = pages.find((target) => target.id === state.pageId) || pages[0];
+  if (!page) throw fail("chrome has no page target. Run: control-portfolio browser open");
+  const cdp = await connectCdp(page.webSocketDebuggerUrl);
+  cdp.pageId = page.id;
+  return cdp;
+}
+
+async function withCdp(state, fn) {
+  const cdp = await connectState(state);
+  try {
+    await enableDomains(cdp);
+    return await fn(cdp);
+  } finally {
+    cdp.close();
+  }
+}
+
+async function pageFacts(cdp) {
+  const evaluated = await cdp.send("Runtime.evaluate", {
+    expression:
+      "({ url: location.href, hash: location.hash, title: document.title, width: window.innerWidth, height: window.innerHeight, canvases: document.querySelectorAll('canvas').length, reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches })",
+    returnByValue: true,
+  });
+  return evaluated.result.value;
+}
+
+async function axNodes(cdp) {
+  const tree = await cdp.send("Accessibility.getFullAXTree");
+  return tree.nodes.filter((node) => !node.ignored && node.role && node.role.value);
+}
+
+function nodeName(node) {
+  return node.name && typeof node.name.value === "string" ? node.name.value : "";
+}
+
+function matches(node, role, name) {
+  if (role && node.role.value.toLowerCase() !== role.toLowerCase()) return false;
+  if (name !== undefined && nodeName(node) !== name) return false;
+  return true;
+}
+
+async function nodeGeometry(cdp, backendNodeId) {
+  const resolved = await cdp.send("DOM.resolveNode", { backendNodeId });
+  const objectId = resolved.object.objectId;
+  try {
+    const evaluated = await cdp.send("Runtime.callFunctionOn", {
+      objectId,
+      returnByValue: true,
+      functionDeclaration: `function() {
+        const el = this.nodeType === 1 ? this : this.parentElement;
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        let opacity = 1;
+        let node = el;
+        while (node) {
+          const value = parseFloat(getComputedStyle(node).opacity);
+          if (!Number.isNaN(value)) opacity *= value;
+          node = node.parentElement;
+        }
+        const style = getComputedStyle(el);
+        return {
+          opacity,
+          display: style.display,
+          visibility: style.visibility,
+          top: rect.top,
+          bottom: rect.bottom,
+          left: rect.left,
+          right: rect.right,
+          width: rect.width,
+          height: rect.height,
+          hrefAttr: this.getAttribute ? this.getAttribute("href") : null,
+          targetAttr: this.getAttribute ? this.getAttribute("target") : null,
+        };
+      }`,
+    });
+    return evaluated.result.value;
+  } finally {
+    await cdp.send("Runtime.releaseObject", { objectId }).catch(() => {});
+  }
+}
+
+function isOnScreen(info, viewport) {
+  if (!info) return false;
+  if (info.display === "none" || info.visibility === "hidden") return false;
+  if (!(info.opacity > 0.95)) return false;
+  if (!(info.width > 0) || !(info.height > 0)) return false;
+  return info.top < viewport.height - 8 && info.bottom > 8 && info.left < viewport.width - 8 && info.right > 8;
+}
+
+async function collectMatches(cdp, role, name) {
+  const nodes = await axNodes(cdp);
+  const matched = nodes.filter((node) => matches(node, role, name) && node.backendDOMNodeId);
+  const facts = await pageFacts(cdp);
+  const detailed = [];
+  for (const node of matched) {
+    let geometry = null;
+    try {
+      geometry = await nodeGeometry(cdp, node.backendDOMNodeId);
+    } catch {
+      geometry = null;
+    }
+    detailed.push({
+      role: node.role.value,
+      name: nodeName(node),
+      backendNodeId: node.backendDOMNodeId,
+      geometry,
+      visible: isOnScreen(geometry, facts),
+    });
+  }
+  return { detailed, facts, nodes };
+}
+
+function formatMatch(match, index, count) {
+  const geo = match.geometry || {};
+  return [
+    `count: ${count}`,
+    `nth: ${index + 1}`,
+    `role: ${match.role}`,
+    `name: ${JSON.stringify(match.name)}`,
+    `visible: ${match.visible ? "true" : "false"}`,
+    `top: ${geo.top === undefined ? "unknown" : Math.round(geo.top)}`,
+    `left: ${geo.left === undefined ? "unknown" : Math.round(geo.left)}`,
+    geo.hrefAttr ? `hrefAttr: ${geo.hrefAttr}` : null,
+    geo.targetAttr ? `target: ${geo.targetAttr}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function similarNames(nodes, name) {
+  const needle = name.toLowerCase();
+  return nodes
+    .filter((node) => nodeName(node).toLowerCase().includes(needle))
+    .slice(0, 8)
+    .map((node) => `${node.role.value} ${JSON.stringify(nodeName(node))}`);
+}
+
+async function resolveMatch(cdp, flags, { requireUnique }) {
+  const role = flags.role === undefined ? undefined : String(flags.role);
+  const name = requireFlag(flags, "name");
+  const nth = optionalNth(flags);
+  const { detailed, nodes } = await collectMatches(cdp, role, name);
+  if (detailed.length === 0) {
+    const hints = similarNames(nodes, name);
+    throw fail(
+      `no ${role || "accessible"} node named ${JSON.stringify(name)}${
+        hints.length ? `\nsimilar:\n${hints.join("\n")}` : ""
+      }`
+    );
+  }
+  if (requireUnique && detailed.length > 1 && nth === null) {
+    throw fail(
+      `${detailed.length} ${role || "nodes"} named ${JSON.stringify(name)}. Pass --nth (1-based DOM order).`
+    );
+  }
+  const index = (nth || 1) - 1;
+  if (!detailed[index]) {
+    throw fail(`--nth ${nth} is outside 1..${detailed.length} for ${JSON.stringify(name)}`);
+  }
+  return { match: detailed[index], index, count: detailed.length, all: detailed };
+}
+
+async function applyViewport(cdp, width, height) {
+  await cdp.send("Emulation.setDeviceMetricsOverride", {
+    width,
+    height,
+    deviceScaleFactor: 1,
+    mobile: width < 768,
+    screenWidth: width,
+    screenHeight: height,
+  });
+  await cdp.send("Runtime.evaluate", {
+    expression: "new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
+    awaitPromise: true,
+  });
+}
+
+async function breakpointMatches(cdp, width) {
+  const evaluated = await cdp.send("Runtime.evaluate", {
+    expression: "window.matchMedia('(min-width: 768px)').matches",
+    returnByValue: true,
+  });
+  return evaluated.result.value === width >= 768;
+}
+
+async function setViewport(cdp, width, height) {
+  const facts = await pageFacts(cdp);
+  const already = facts.width === width && facts.height === height && (await breakpointMatches(cdp, width));
+  if (already) return;
+  const { windowId } = await cdp.send("Browser.getWindowForTarget");
+  let extraHeight = 0;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await cdp.send("Browser.setWindowBounds", {
+      windowId,
+      bounds: { width, height: height + extraHeight, windowState: "normal" },
+    });
+    await sleep(50);
+    const sized = await pageFacts(cdp);
+    if (sized.width === width && sized.height >= height) break;
+    extraHeight += Math.max(height - sized.height, 1);
+  }
+  await applyViewport(cdp, width, height);
+  if (!(await breakpointMatches(cdp, width))) {
+    throw fail(`viewport ${width}x${height} did not update the desktop breakpoint`);
+  }
+}
+
+async function navigateTo(cdp, url, timeoutMs) {
+  const loaded = cdp.waitFor("Page.loadEventFired", timeoutMs).catch(() => null);
+  const hashed = cdp.waitFor("Page.navigatedWithinDocument", timeoutMs).catch(() => null);
+  await cdp.send("Page.navigate", { url });
+  const wantBase = url.split("#")[0].replace(/\/$/, "");
+  const wantHash = url.includes("#") ? `#${url.split("#")[1]}` : "";
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const facts = await pageFacts(cdp);
+    const base = facts.url.split("#")[0].replace(/\/$/, "");
+    if (base === wantBase && (!wantHash || facts.hash === wantHash)) return facts;
+    await sleep(100);
+  }
+  void loaded;
+  void hashed;
+  throw fail(`navigation did not reach ${url}`);
+}
+
+async function waitVisible(cdp, flags) {
+  const timeout = flags.timeout === undefined ? 10000 : Number(flags.timeout);
+  if (!Number.isFinite(timeout) || timeout < 0) throw fail(`invalid --timeout ${flags.timeout}`);
+  const start = Date.now();
+  let last = "not found";
+  while (Date.now() - start < timeout) {
+    try {
+      const resolved = await resolveMatch(cdp, flags, { requireUnique: false });
+      if (resolved.match.visible) {
+        console.log(formatMatch(resolved.match, resolved.index, resolved.count));
+        return resolved;
+      }
+      last = `present but not visible (top ${
+        resolved.match.geometry ? Math.round(resolved.match.geometry.top) : "unknown"
+      }, opacity ${resolved.match.geometry ? resolved.match.geometry.opacity : "unknown"})`;
+    } catch (error) {
+      last = error.message;
+    }
+    await sleep(100);
+  }
+  throw fail(`timed out waiting for visible ${flags.role || "node"} ${JSON.stringify(flags.name)}: ${last}`);
+}
+
+function formatTree(nodes) {
+  const byId = new Map(nodes.map((node) => [node.nodeId, node]));
+  const children = new Map();
+  const roots = [];
+  for (const node of nodes) {
+    if (node.parentId && byId.has(node.parentId)) {
+      if (!children.has(node.parentId)) children.set(node.parentId, []);
+      children.get(node.parentId).push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  const lines = [];
+  const walk = (node, depth) => {
+    if (!node.ignored && node.role && nodeName(node)) {
+      lines.push(`${"  ".repeat(depth)}${node.role.value} ${JSON.stringify(nodeName(node))}`);
+    }
+    for (const child of children.get(node.nodeId) || []) walk(child, depth + 1);
+  };
+  for (const root of roots) walk(root, 0);
+  return `${lines.join("\n")}\n`;
+}
+
+function writeMeta(file, facts, flags) {
+  const lines = [
+    `feature: ${flags.feature || ""}`,
+    `entry: ${flags.entry || ""}`,
+    `url: ${facts.url}`,
+    `title: ${facts.title}`,
+    `viewport: ${facts.width}x${facts.height}`,
+  ];
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(`${file}.meta.txt`, `${lines.join("\n")}\n`);
+}
+
+async function clickMatch(cdp, match) {
+  const before = await listPagesSafe(cdp.debugPort);
+  const beforeIds = new Set(before.map((target) => target.id));
+  await cdp.send("DOM.scrollIntoViewIfNeeded", { backendNodeId: match.backendNodeId }).catch(() => {});
+  const geometry = await nodeGeometry(cdp, match.backendNodeId);
+  const facts = await pageFacts(cdp);
+  const x = geometry.left + geometry.width / 2;
+  const y = geometry.top + geometry.height / 2;
+  if (!(x >= 0 && y >= 0 && x <= facts.width && y <= facts.height)) {
+    throw fail(
+      `${match.role} ${JSON.stringify(match.name)} is outside the viewport at ${Math.round(x)},${Math.round(y)}`
+    );
+  }
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+  await cdp.send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 });
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 });
+  if (geometry.hrefAttr && geometry.hrefAttr.startsWith("#")) {
+    const start = Date.now();
+    while (Date.now() - start < 3000) {
+      const now = await pageFacts(cdp);
+      if (now.hash === geometry.hrefAttr) break;
+      await sleep(50);
+    }
+  }
+  const afterFacts = await pageFacts(cdp);
+  console.log(`clicked: ${match.role} ${JSON.stringify(match.name)}`);
+  console.log(`url: ${afterFacts.url}`);
+  console.log(`hash: ${afterFacts.hash || "(none)"}`);
+  const popups = await waitForPopups(cdp.debugPort, beforeIds);
+  for (const popup of popups) console.log(`popup: ${popup.url}`);
+  return { facts: afterFacts, popups };
+}
+
+async function listPagesSafe(debugPort) {
+  try {
+    const targets = await listTargets(debugPort);
+    return targets.filter((target) => target.type === "page");
+  } catch {
+    return [];
+  }
+}
+
+async function waitForPopups(debugPort, beforeIds) {
+  const start = Date.now();
+  let latest = [];
+  while (Date.now() - start < 2000) {
+    const pages = await listPagesSafe(debugPort);
+    latest = pages.filter((target) => !beforeIds.has(target.id));
+    if (latest.some((target) => target.url && target.url !== "about:blank")) return latest;
+    await sleep(100);
+  }
+  return latest;
+}
+
+function assertOurNext(pid, port) {
+  const cmd = cmdline(pid);
+  return cmd.includes("npm") && cmd.includes("dev") && cmd.includes(String(port));
+}
+
+function assertOurChrome(pid, profile) {
+  const cmd = cmdline(pid);
+  return cmd.includes("chrome") && cmd.includes(profile);
+}
+
+async function stopPid(pid, predicate) {
+  if (!alive(pid)) return;
+  if (!predicate(pid)) {
+    throw fail(`refusing to kill pid ${pid}; cmdline is ${JSON.stringify(cmdline(pid))}`);
+  }
+  killTree(pid, "SIGTERM");
+  if (!(await waitUntilDead(pid, 5000))) {
+    if (!predicate(pid)) throw fail(`pid ${pid} changed cmdline during shutdown`);
+    killTree(pid, "SIGKILL");
+    if (!(await waitUntilDead(pid, 2000))) {
+      throw fail(`pid ${pid} did not exit`);
+    }
+  }
+}
+
+async function cleanupPort(port) {
+  const file = statePath(port);
+  if (!fs.existsSync(file)) {
+    console.log("result: no-instance");
+    console.log(`state: ${file}`);
+    return;
+  }
+  const state = readJson(file);
+  if (state.repo !== REPO) {
+    throw fail(`refusing to clean ${file}; it belongs to ${state.repo}`);
+  }
+  await stopPid(state.chromePid, (pid) => assertOurChrome(pid, state.chromeProfile));
+  await stopPid(state.nextPid, (pid) => assertOurNext(pid, port));
+  fs.rmSync(stateDir(port), { recursive: true, force: true });
+  console.log("result: cleaned");
+  console.log(`state: ${file}`);
+  console.log(`evidence: ${evidenceDir()}`);
+}
+
+async function launch(port) {
+  const versions = packageInfo();
+  const existing = repoDevServers();
+  if (existing.length > 0) {
+    throw fail(
+      `a next dev server is already running in ${REPO} (pid ${existing[0].pid}). One checkout can host one dev server. Stop that process before launch.`
+    );
+  }
+  const listeners = listenerPids(port);
+  if (listeners.length > 0) {
+    throw fail(`port ${port} is already listening (pid ${listeners.join(", ")})`);
+  }
+  const dir = stateDir(port);
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+  const logFile = path.join(dir, "next.log");
+  const chromeLog = path.join(dir, "chrome.log");
+  const chromeProfile = path.join(dir, "chrome-profile");
+  const debugPort = port + 17000;
+  if (debugPort > 65535) throw fail(`debug port ${debugPort} is out of range`);
+  const url = `http://${HOSTNAME}:${port}`;
+  const fd = fs.openSync(logFile, "a");
+  const child = spawn("npm", ["run", "dev", "--", "--port", String(port), "--hostname", HOSTNAME], {
+    cwd: REPO,
+    detached: true,
+    stdio: ["ignore", fd, fd],
+    env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1", BROWSER: "none" },
+  });
+  child.unref();
+  fs.closeSync(fd);
+  const state = {
+    repo: REPO,
+    port,
+    hostname: HOSTNAME,
+    url,
+    nextPid: child.pid,
+    pgid: child.pid,
+    debugPort,
+    chromeProfile,
+    chromeLog,
+    logFile,
+    packageVersion: versions.packageVersion,
+    nextVersion: versions.nextVersion,
+    gitSha: gitSha(),
+    title: TITLE,
+  };
+  writeState(state);
+  try {
+    await waitForServer(state);
+    await startChrome(state, chromeLog);
+    writeState(state);
+    await openPage(state, null, HERO_HEADING);
+    console.log("result: ready");
+    console.log(`url: ${state.url}`);
+    console.log(`port: ${state.port}`);
+    console.log(`log: ${state.logFile}`);
+    console.log(`packageVersion: ${state.packageVersion}`);
+    console.log(`nextVersion: ${state.nextVersion}`);
+    console.log(`gitSha: ${state.gitSha}`);
+    console.log(`title: ${TITLE}`);
+    console.log("headingVisible: true");
+  } catch (error) {
+    try {
+      await cleanupPort(port);
+    } catch (cleanupError) {
+      console.error(cleanupError.message);
+    }
+    throw error;
+  }
+}
+
+async function waitForServer(state) {
+  const start = Date.now();
+  while (Date.now() - start < 120000) {
+    if (!alive(state.nextPid)) {
+      throw fail(`next dev exited before it was ready\n${tail(state.logFile, 40)}`);
+    }
+    const log = fs.existsSync(state.logFile) ? fs.readFileSync(state.logFile, "utf8") : "";
+    let body = "";
+    let status = 0;
+    try {
+      const response = await fetch(`${state.url}/`);
+      status = response.status;
+      body = await response.text();
+    } catch {
+      status = 0;
+    }
+    const logReady = log.includes(`Local:`) && log.includes(state.url) && log.includes("Ready in");
+    const pageReady =
+      status === 200 &&
+      body.includes(`<title>${TITLE}</title>`) &&
+      body.includes('id="projects"') &&
+      body.includes(HERO_HEADING);
+    if (logReady && pageReady) return;
+    await sleep(250);
+  }
+  throw fail(`timed out waiting for ${state.url} to serve the portfolio\n${tail(state.logFile, 40)}`);
+}
+
+async function startChrome(state, chromeLog) {
+  const bin = chromeBin();
+  fs.mkdirSync(state.chromeProfile, { recursive: true });
+  const fd = fs.openSync(chromeLog, "a");
+  const child = spawn(
+    bin,
+    [
+      "--headless=new",
+      "--disable-gpu",
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-sync",
+      "--force-device-scale-factor=1",
+      `--remote-debugging-port=${state.debugPort}`,
+      `--remote-debugging-address=${HOSTNAME}`,
+      "--remote-allow-origins=*",
+      `--user-data-dir=${state.chromeProfile}`,
+      "--window-size=1280,800",
+      "about:blank",
+    ],
+    { detached: true, stdio: ["ignore", fd, fd] }
+  );
+  child.unref();
+  fs.closeSync(fd);
+  state.chromePid = child.pid;
+  const start = Date.now();
+  while (Date.now() - start < 20000) {
+    if (!alive(state.chromePid)) {
+      throw fail(`chrome exited\n${tail(chromeLog, 40)}`);
+    }
+    try {
+      const response = await fetch(`http://${HOSTNAME}:${state.debugPort}/json/version`);
+      if (response.ok) return;
+    } catch {
+      // Chrome is still binding the debug port.
+    }
+    await sleep(100);
+  }
+  throw fail(`chrome debug port ${state.debugPort} did not open\n${tail(chromeLog, 40)}`);
+}
+
+async function openPage(state, hash, waitHeading) {
+  const target = hash ? `${state.url}/#${hash}` : `${state.url}/`;
+  await withCdp(state, async (cdp) => {
+    cdp.debugPort = state.debugPort;
+    await navigateTo(cdp, target, 30000);
+    await setViewport(cdp, 1280, 800);
+    state.viewportWidth = 1280;
+    state.viewportHeight = 800;
+    writeState(state);
+    if (!state.pageId) {
+      state.pageId = cdp.pageId;
+      writeState(state);
+    }
+    if (waitHeading) {
+      await waitVisible(cdp, { role: "heading", name: waitHeading, timeout: 20000 });
+    } else {
+      const facts = await pageFacts(cdp);
+      console.log(`url: ${facts.url}`);
+      console.log(`hash: ${facts.hash || "(none)"}`);
+      console.log(`title: ${facts.title}`);
+    }
+  });
+}
+
+async function doctor(port) {
+  const state = readState(port);
+  const versions = packageInfo();
+  const failures = [];
+  const check = (ok, message) => {
+    if (!ok) failures.push(message);
+    console.log(`${ok ? "pass" : "fail"}: ${message}`);
+  };
+  check(alive(state.nextPid) && assertOurNext(state.nextPid, port), `next pid ${state.nextPid} is this run's npm dev process`);
+  const listeners = listenerPids(port);
+  const owned = listeners.some((pid) => pid === state.nextPid || isDescendant(pid, state.nextPid));
+  check(owned, `port ${port} is owned by pid ${state.nextPid}`);
+  let status = 0;
+  let body = "";
+  try {
+    const response = await fetch(`${state.url}/`);
+    status = response.status;
+    body = await response.text();
+  } catch (error) {
+    failures.push(`GET ${state.url}/ failed: ${error.message}`);
+  }
+  check(status === 200 && body.includes(`<title>${TITLE}</title>`), `homepage title is ${TITLE}`);
+  check(versions.packageVersion === state.packageVersion, `package version ${versions.packageVersion} matches launch ${state.packageVersion}`);
+  check(versions.nextVersion === state.nextVersion, `next version ${versions.nextVersion} matches launch ${state.nextVersion}`);
+  const sha = gitSha();
+  check(sha === state.gitSha, `git HEAD ${sha} matches launch ${state.gitSha}`);
+  check(alive(state.chromePid) && assertOurChrome(state.chromePid, state.chromeProfile), `chrome pid ${state.chromePid} is this run's browser`);
+  let headingPresent = false;
+  let pageUrl = "";
+  if (alive(state.chromePid)) {
+    try {
+      await withCdp(state, async (cdp) => {
+        const facts = await pageFacts(cdp);
+        pageUrl = facts.url;
+        const found = await collectMatches(cdp, "heading", HERO_HEADING);
+        headingPresent = found.detailed.length > 0;
+      });
+    } catch (error) {
+      failures.push(`page check failed: ${error.message}`);
+    }
+  }
+  check(pageUrl.startsWith(state.url), `browser url starts with ${state.url}`);
+  check(headingPresent, `heading ${JSON.stringify(HERO_HEADING)} is in the accessibility tree`);
+  console.log(`url: ${state.url}`);
+  console.log(`pageUrl: ${pageUrl || "(unavailable)"}`);
+  console.log(`port: ${state.port}`);
+  console.log(`packageVersion: ${state.packageVersion}`);
+  console.log(`nextVersion: ${state.nextVersion}`);
+  console.log(`gitSha: ${state.gitSha}`);
+  console.log(`title: ${TITLE}`);
+  console.log("auth: none");
+  console.log(`headingPresent: ${headingPresent ? "true" : "false"}`);
+  console.log(`evidence: ${evidenceDir()}`);
+  if (failures.length > 0 && owned && status === 200 && !pageUrl.startsWith(state.url)) {
+    console.log("recovery: server is up but the browser left the portfolio. Run: control-portfolio browser open");
+  }
+  console.log(`result: ${failures.length === 0 ? "ok" : "not-ok"}`);
+  if (failures.length > 0) throw fail(failures.join("\n"));
+}
+
+async function browser(port, argv) {
+  const [sub, ...rest] = argv;
+  if (!sub) throw fail("browser requires a subcommand");
+  const flags = parseFlags(rest);
+  if (flags._.length > 0) throw fail(`unexpected arguments: ${flags._.join(" ")}`);
+  const state = readState(port);
+  if (sub === "open") {
+    if (flags.hash === true) throw fail("--hash requires a value");
+    const hash = flags.hash === undefined ? null : String(flags.hash).replace(/^#/, "");
+    await openPage(state, hash, hash ? null : HERO_HEADING);
+    return;
+  }
+  await withCdp(state, async (cdp) => {
+    cdp.debugPort = state.debugPort;
+    if (state.viewportWidth && state.viewportHeight && sub !== "viewport") {
+      await setViewport(cdp, state.viewportWidth, state.viewportHeight);
+    }
+    if (sub === "viewport") {
+      const width = Number(requireFlag(flags, "width"));
+      const height = Number(requireFlag(flags, "height"));
+      if (!Number.isInteger(width) || !Number.isInteger(height) || width < 320 || height < 320) {
+        throw fail("viewport width and height must be integers >= 320");
+      }
+      await setViewport(cdp, width, height);
+      state.viewportWidth = width;
+      state.viewportHeight = height;
+      writeState(state);
+      const facts = await pageFacts(cdp);
+      console.log(`viewport: ${facts.width}x${facts.height}`);
+      return;
+    }
+    if (sub === "click") {
+      const resolved = await resolveMatch(cdp, flags, { requireUnique: true });
+      await clickMatch(cdp, resolved.match);
+      return;
+    }
+    if (sub === "wait") {
+      await waitVisible(cdp, flags);
+      return;
+    }
+    if (sub === "see") {
+      const resolved = await resolveMatch(cdp, flags, { requireUnique: false });
+      console.log(formatMatch(resolved.match, resolved.index, resolved.count));
+      return;
+    }
+    if (sub === "absent") {
+      const role = flags.role === undefined ? undefined : String(flags.role);
+      const name = requireFlag(flags, "name");
+      const { detailed } = await collectMatches(cdp, role, name);
+      console.log(`count: ${detailed.length}`);
+      console.log(`name: ${JSON.stringify(name)}`);
+      if (detailed.length !== 0) {
+        throw fail(`expected no ${role || "node"} named ${JSON.stringify(name)}, found ${detailed.length}`);
+      }
+      return;
+    }
+    if (sub === "href") {
+      const resolved = await resolveMatch(cdp, flags, { requireUnique: true });
+      if (!resolved.match.geometry || !resolved.match.geometry.hrefAttr) {
+        throw fail(`${resolved.match.role} ${JSON.stringify(resolved.match.name)} has no href`);
+      }
+      console.log(formatMatch(resolved.match, resolved.index, resolved.count));
+      return;
+    }
+    if (sub === "location" || sub === "motion" || sub === "canvases") {
+      const facts = await pageFacts(cdp);
+      if (sub === "location") {
+        console.log(`url: ${facts.url}`);
+        console.log(`hash: ${facts.hash || "(none)"}`);
+        console.log(`title: ${facts.title}`);
+      } else if (sub === "motion") {
+        console.log(`reducedMotion: ${facts.reducedMotion ? "true" : "false"}`);
+      } else {
+        console.log(`canvases: ${facts.canvases}`);
+      }
+      return;
+    }
+    if (sub === "wheel") {
+      const dy = Number(requireFlag(flags, "dy"));
+      if (!Number.isFinite(dy)) throw fail(`invalid --dy ${flags.dy}`);
+      const facts = await pageFacts(cdp);
+      await cdp.send("Input.dispatchMouseEvent", {
+        type: "mouseWheel",
+        x: Math.round(facts.width / 2),
+        y: Math.round(facts.height / 2),
+        deltaX: 0,
+        deltaY: dy,
+      });
+      await sleep(100);
+      console.log(`wheeled: ${dy}`);
+      return;
+    }
+    if (sub === "snapshot") {
+      if (flags.aria !== true) throw fail("snapshot requires --aria");
+      const file = resolveEvidence(requireFlag(flags, "path"));
+      const facts = await pageFacts(cdp);
+      const nodes = await axNodes(cdp);
+      const header = [
+        `feature: ${flags.feature || ""}`,
+        `entry: ${flags.entry || ""}`,
+        `url: ${facts.url}`,
+        `title: ${facts.title}`,
+        `viewport: ${facts.width}x${facts.height}`,
+        "",
+      ].join("\n");
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, header + formatTree(nodes));
+      console.log(`wrote: ${file}`);
+      return;
+    }
+    if (sub === "screenshot") {
+      const file = resolveEvidence(requireFlag(flags, "path"));
+      const facts = await pageFacts(cdp);
+      const shot = await cdp.send("Page.captureScreenshot", { format: "png" });
+      fs.mkdirSync(path.dirname(file), { recursive: true });
+      fs.writeFileSync(file, Buffer.from(shot.data, "base64"));
+      writeMeta(file, facts, flags);
+      console.log(`wrote: ${file}`);
+      console.log(`wrote: ${file}.meta.txt`);
+      return;
+    }
+    if (sub === "close-extra") {
+      const pages = await listPagesSafe(state.debugPort);
+      let closed = 0;
+      for (const page of pages) {
+        if (page.id === state.pageId) continue;
+        const response = await fetch(`http://${HOSTNAME}:${state.debugPort}/json/close/${page.id}`);
+        if (!response.ok) throw fail(`failed to close ${page.url}`);
+        console.log(`closed: ${page.url}`);
+        closed += 1;
+      }
+      console.log(`closedCount: ${closed}`);
+      return;
+    }
+    throw fail(`unknown browser subcommand: ${sub}`);
+  });
+}
+
+function usage() {
+  return [
+    "control-portfolio launch [--port 3100]",
+    "control-portfolio doctor [--port 3100]",
+    "control-portfolio cleanup [--port 3100]",
+    "control-portfolio browser open [--hash projects]",
+    "control-portfolio browser viewport --width 1280 --height 800",
+    "control-portfolio browser click --role link --name Projects [--nth 1]",
+    "control-portfolio browser wait --role heading --name Projects [--timeout 10000]",
+    "control-portfolio browser see --role heading --name Projects [--nth 1]",
+    "control-portfolio browser absent --role link --name Home",
+    "control-portfolio browser href --role link --name \"Open GenHealthAZ live site\"",
+    "control-portfolio browser location",
+    "control-portfolio browser motion",
+    "control-portfolio browser canvases",
+    "control-portfolio browser wheel --dy 400",
+    "control-portfolio browser snapshot --aria --path artifacts/projects/view-work.aria.txt --feature projects --entry view-work",
+    "control-portfolio browser screenshot --path artifacts/projects/view-work.png --feature projects --entry view-work",
+    "control-portfolio browser close-extra",
+  ].join("\n");
+}
+
+async function main() {
+  const { argv, port } = extractGlobal(process.argv.slice(2));
+  const [command, ...rest] = argv;
+  if (!command || command === "--help" || command === "help") {
+    console.log(usage());
+    return;
+  }
+  if (command === "launch") {
+    if (rest.length > 0) throw fail(`unexpected arguments: ${rest.join(" ")}`);
+    await launch(port);
+    return;
+  }
+  if (command === "doctor") {
+    if (rest.length > 0) throw fail(`unexpected arguments: ${rest.join(" ")}`);
+    await doctor(port);
+    return;
+  }
+  if (command === "cleanup") {
+    if (rest.length > 0) throw fail(`unexpected arguments: ${rest.join(" ")}`);
+    await cleanupPort(port);
+    return;
+  }
+  if (command === "browser") {
+    await browser(port, rest);
+    return;
+  }
+  throw fail(`unknown command: ${command}\n${usage()}`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    if (error && error.operational) console.error(error.message);
+    else console.error(error && error.stack ? error.stack : error);
+    process.exit(1);
+  });
