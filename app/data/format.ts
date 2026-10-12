@@ -23,7 +23,7 @@ const NUMBER_WORDS = [
 ] as const;
 
 /** { year: 2023, month: 8 } -> "Aug 2023" */
-export function formatYearMonth(ym: YearMonth): string {
+function formatYearMonth(ym: YearMonth): string {
   return `${MONTH_ABBR[ym.month - 1]} ${ym.year}`;
 }
 

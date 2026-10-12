@@ -16,7 +16,7 @@ export function Hero({ hero }: { hero: HeroView }) {
         <div className="flex h-full flex-col gap-6 p-5 sm:p-8 lg:p-10">
           <div className="flex items-center gap-4">
             <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-white/10 lg:hidden">
-              <Image src={hero.portrait.src} alt={hero.portrait.alt} fill loading="eager" sizes="64px" className="object-cover" />
+              <Image src={hero.portrait.src} alt={hero.portrait.alt} fill sizes="64px" className="object-cover" />
             </div>
             <div className="min-w-0">
               <HeroName className="font-display text-[40px] font-extrabold leading-[0.95] tracking-[-0.035em] sm:text-6xl lg:text-[76px]">

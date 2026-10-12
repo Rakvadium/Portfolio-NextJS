@@ -1,7 +1,7 @@
 // Pure: which section is "current" for a given layout. No DOM, no React; the only place the
 // 35%-line rule lives.
 export type SectionBox = { readonly id: string; readonly top: number };
-export type ScrollViewport = { readonly height: number; readonly scrollY: number; readonly scrollHeight: number };
+type ScrollViewport = { readonly height: number; readonly scrollY: number; readonly scrollHeight: number };
 
 /**
  * The last section whose top is at or above `lineRatio * viewport.height`, falling back to the first;

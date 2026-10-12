@@ -41,7 +41,7 @@ const variants = {
   oneProject: { ...content, projects: content.projects.slice(0, 1) },
 } satisfies Record<string, Content>;
 
-export type FixtureName = keyof typeof variants;
+type FixtureName = keyof typeof variants;
 
 export const fixtures = Object.fromEntries(
   Object.entries(variants).map(([name, c]) => [name, buildSite(c, FIXED_TODAY)]),
