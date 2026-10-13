@@ -1,23 +1,24 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
+import { fontVariables } from "./fonts";
+import { site } from "./data/site";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "Caleb Mills | Senior Frontend Engineer",
-  description:
-    "Caleb Mills is a frontend skewed software engineer in Meridian, ID with 9+ years of experience in React, TypeScript, Next.js, and Node.js.",
+  title: site.meta.title,
+  description: site.meta.description,
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  themeColor: "#111014", // --color-canvas; metadata cannot read a CSS variable
+  colorScheme: "dark",
+};
+
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>{children}</body>
+    // suppressHydrationWarning covers attributes browser extensions inject on <html>; nothing in our tree needs it.
+    <html lang="en" className={fontVariables} suppressHydrationWarning>
+      <body>{children}</body>
     </html>
   );
 }

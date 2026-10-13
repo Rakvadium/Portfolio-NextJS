@@ -6,34 +6,43 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"app/**/*.test.ts\" \"components/**/*.test.ts\"",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test-storybook": "vitest run --project=storybook",
+    "capture": "node scripts/capture.mjs",
+    "check": "npm run typecheck && npm run lint && npm test && npm run test-storybook && npm run build-storybook && npm run build"
   },
   "dependencies": {
-    "@heroicons/react": "^2.2.0",
-    "@radix-ui/react-dialog": "^1.1.7",
-    "@radix-ui/react-slot": "^1.2.0",
-    "@radix-ui/react-tabs": "^1.1.4",
-    "canvas-confetti": "^1.9.4",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.6.3",
     "lucide-react": "^0.487.0",
     "next": "15.2.8",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.2.0",
-    "tw-animate-css": "^1.2.5"
+    "tailwind-merge": "^3.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@storybook/addon-a11y": "^10.6.2",
+    "@storybook/addon-docs": "^10.6.2",
+    "@storybook/addon-vitest": "^10.6.2",
+    "@storybook/nextjs-vite": "^10.6.2",
     "@tailwindcss/postcss": "^4",
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/browser-playwright": "^5.0.4",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "eslint-plugin-storybook": "^10.6.2",
+    "playwright": "^1.64.0",
+    "storybook": "^10.6.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
   }
 }
