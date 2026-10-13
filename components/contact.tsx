@@ -8,7 +8,7 @@ export function Contact({ contact }: { contact: ContactView }) {
   return (
     <Tile glow="magenta" motion="reveal">
       <div className="relative grid grid-cols-1 gap-8 overflow-hidden p-5 sm:p-10 lg:grid-cols-12">
-        <div aria-hidden className="contact-glow pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl" />
+        <div aria-hidden className="contact-glow pointer-events-none absolute -right-[287px] -top-[287px] size-[670px]" />
         <div className="relative lg:col-span-5">
           <h2 className="font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl">
             Get in <span className="text-brand">touch</span>

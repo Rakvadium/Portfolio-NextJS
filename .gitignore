@@ -43,3 +43,6 @@ storybook-static/
 
 # proof captures from scripts/capture.mjs
 /captures/
+
+# load-time measurement output (scripts/measure-*.mjs)
+/.perf/
