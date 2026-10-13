@@ -1,6 +1,6 @@
 "use client";
 // PROTOTYPE (throwaway, branch prototype/mobile-nav): four mobile navigation designs switchable via
-// `?nav=current|A..G` on the existing `/` route. Below lg the chosen variant replaces the top bar;
+// `?nav=current|A..I` on the existing `/` route. Below lg the chosen variant replaces the top bar;
 // lg+ always renders the existing TopBar (passed in as children), unchanged.
 import { Suspense, type ComponentType, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -13,6 +13,8 @@ import { VariantD, name as nameD } from "./variant-d-rail";
 import { VariantE, name as nameE } from "./variant-e-glass";
 import { VariantF, name as nameF } from "./variant-f-glass-docked";
 import { VariantG, name as nameG } from "./variant-g-glass-labeled";
+import { VariantH, name as nameH } from "./variant-h-morph";
+import { VariantI, name as nameI } from "./variant-i-handoff";
 
 export const variants = [
   { key: "current", name: "Today's header", Component: undefined },
@@ -23,6 +25,8 @@ export const variants = [
   { key: "E", name: nameE, Component: VariantE },
   { key: "F", name: nameF, Component: VariantF },
   { key: "G", name: nameG, Component: VariantG },
+  { key: "H", name: nameH, Component: VariantH },
+  { key: "I", name: nameI, Component: VariantI },
 ] as const satisfies readonly { key: string; name: string; Component: ComponentType<MobileNavProps> | undefined }[];
 
 const showSwitcher = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";

@@ -44,6 +44,9 @@ export function GlassShell({
   tabs,
   act,
   dense = false,
+  header,
+  scrollPaddingTop = "3.75rem",
+  extraCss = "",
 }: {
   brand: Brand;
   sections: MobileNavProps["sections"];
@@ -51,13 +54,17 @@ export function GlassShell({
   tabs: ReactNode;
   act: ReactNode;
   dense?: boolean;
+  /** Replaces the default glass top bar (H, I). */
+  header?: ReactNode;
+  scrollPaddingTop?: string;
+  extraCss?: string;
 }) {
   const title = useCollapsedTitle(sections);
   return (
     <MotionConfig reducedMotion="user">
-      <MobileScrollPadding top="3.75rem" extra={metricsCss(dense)} />
+      <MobileScrollPadding top={scrollPaddingTop} extra={metricsCss(dense) + extraCss} />
       <div data-glass-shell>
-        <header className="fixed inset-x-0 top-0 z-50 flex flex-col border-b border-white/[0.08] bg-canvas/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+        {header ?? <header className="fixed inset-x-0 top-0 z-50 flex flex-col border-b border-white/[0.08] bg-canvas/80 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
           <div className="grid h-11 grid-cols-[minmax(2.5rem,1fr)_minmax(0,auto)_minmax(2.5rem,1fr)] items-center px-1.5">
             <div className="flex min-w-0 items-center justify-start">
               <a href="#home" aria-label={`${brand.name}, back to top`} className="flex min-w-0 items-center gap-2 rounded-full pl-1.5 pr-2">
@@ -87,7 +94,7 @@ export function GlassShell({
           <div className="absolute inset-x-0 -bottom-px">
             <ScrollProgress />
           </div>
-        </header>
+        </header>}
 
         <div
           className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex items-center gap-[var(--g-gap)] px-3 pt-3"
@@ -220,13 +227,12 @@ export function NavIconLink({ channel }: { channel: Channel }) {
  * scrolled under the bar. Here: the last section whose h2 has passed the bar's bottom edge. Home
  * (the h1) never produces a title.
  */
-function useCollapsedTitle(sections: readonly SectionView[]) {
+export function useCollapsedTitle(sections: readonly SectionView[], barBottom = 44) {
   const [state, setState] = useState<{ label: string; visible: boolean }>({ label: "", visible: false });
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      const barBottom = 44;
       let label = "";
       for (const s of sections) {
         if (s.id === "home") continue;
@@ -247,6 +253,6 @@ function useCollapsedTitle(sections: readonly SectionView[]) {
       window.removeEventListener("resize", schedule);
       cancelAnimationFrame(frame);
     };
-  }, [sections]);
+  }, [sections, barBottom]);
   return state;
 }

@@ -26,7 +26,7 @@ export function HomePage({ site }: { site: Site }) {
   return (
     <div className="relative min-h-screen overflow-x-clip">
       <Backdrop />
-      <MobileNavPrototype brand={site.brand} sections={site.sections} social={site.social}>
+      <MobileNavPrototype brand={site.brand} sections={site.sections} social={site.social} portrait={site.hero.portrait}>
         <TopBar brand={site.brand} sections={site.sections} social={site.social} />
       </MobileNavPrototype>
       <main className="relative z-10 mx-auto max-w-[1200px] px-4 pb-36 sm:px-6">

@@ -17,7 +17,7 @@ const VIDEO = !args.includes("--no-video");
 const OUT = path.resolve("captures", "mobile-nav");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const VARIANTS = ["current", "A", "B", "C", "D", "E", "F", "G"].filter((v) => !ONLY || ONLY.includes(v));
+const VARIANTS = ["current", "A", "B", "C", "D", "E", "F", "G", "H", "I"].filter((v) => !ONLY || ONLY.includes(v));
 
 // How to open each variant's menu (if it has one) and which link to use in it.
 const OPEN = {
@@ -29,7 +29,10 @@ const OPEN = {
   E: null,
   F: null,
   G: null,
+  H: null,
+  I: null,
 };
+const MASTHEAD = ["H", "I"];
 const GLASS = ["E", "F", "G"];
 
 async function launch() {
@@ -185,6 +188,26 @@ async function stills(cdp, v) {
   await shot(cdp, `${p}-desktop.png`);
 }
 
+/** H/I (and F for comparison): top, mid-handoff frames, and scrolled-to-Experience at two phone sizes. */
+async function handoffStills(cdp, v) {
+  for (const [w, h] of [[390, 844], [360, 780]]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 2, mobile: true });
+    await goto(cdp, url(v));
+    await instantScroll(cdp);
+    await hideSwitcher(cdp, true);
+    const tag = `${v}-hi-${w}`;
+    await shot(cdp, `${tag}-0top.png`);
+    for (const y of [40, 80, 120, 160, 200]) {
+      await cdp.evaluate(`scrollTo(0, ${y})`);
+      await sleep(700);
+      await shot(cdp, `${tag}-y${String(y).padStart(3, "0")}.png`);
+    }
+    await cdp.evaluate(`document.getElementById('experience').scrollIntoView(); scrollBy(0, 160)`);
+    await sleep(1000);
+    await shot(cdp, `${tag}-scrolled.png`);
+  }
+}
+
 async function video(cdp, v) {
   await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
   const frameDir = fs.mkdtempSync(path.join(os.tmpdir(), "proto-nav-frames-"));
@@ -198,6 +221,13 @@ async function video(cdp, v) {
   await cdp.send("Page.startScreencast", { format: "jpeg", quality: 85, everyNthFrame: 1, maxWidth: 390, maxHeight: 844 });
   await goto(cdp, url(v));
   await sleep(600);
+  if (MASTHEAD.includes(v)) {
+    await glide(cdp, 220, 3500);
+    await sleep(600);
+    await glide(cdp, 0, 2500);
+    await sleep(600);
+    await glide(cdp, 220, 2000);
+  }
   await glide(cdp, "skills", 1600);
   await glide(cdp, "experience", 1600);
   await sleep(500);
@@ -217,7 +247,7 @@ async function video(cdp, v) {
   }
   await glide(cdp, 99999, 1800);
   await sleep(500);
-  await glide(cdp, 0, 2600);
+  await glide(cdp, 0, MASTHEAD.includes(v) ? 5000 : 2600);
   await sleep(1000);
   await cdp.send("Page.stopScreencast");
   cdp.off("Page.screencastFrame");
@@ -236,6 +266,22 @@ async function video(cdp, v) {
 
 fs.mkdirSync(OUT, { recursive: true });
 const cdp = await launch();
+if (args.includes("--sheet-hi")) {
+  const rows = [["top", "0top"], ["mid-handoff y=80", "y080"], ["scrolled", "scrolled"]];
+  const cols = ["F", "H", "I"];
+  const cell = (v, r) => `<img src="file:///${path.join(OUT, `${v}-hi-390-${r}.png`).split(path.sep).join("/")}">`;
+  const html = `<html><body style="margin:0;background:#0b0a0d;font:600 18px system-ui;color:#f3ede6"><div style="display:grid;grid-template-columns:120px repeat(3,390px);gap:16px;padding:16px;align-items:center">
+    <div></div>${cols.map((c) => `<div style="text-align:center">${c}</div>`).join("")}
+    ${rows.map(([label, r]) => `<div style="text-align:right;color:#aaa">${label}</div>${cols.map((c) => cell(c, r)).join("")}`).join("")}
+  </div><style>img{width:390px;height:844px;display:block;border-radius:12px}</style></body></html>`;
+  const htmlFile = path.join(os.tmpdir(), "proto-nav-sheet-hi.html");
+  fs.writeFileSync(htmlFile, html);
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 120 + 3 * 406 + 32, height: 3 * 860 + 70, deviceScaleFactor: 1, mobile: false });
+  await goto(cdp, `file:///${htmlFile.split(path.sep).join("/")}`);
+  await shot(cdp, "sheet-hi.png");
+  cdp.close();
+  process.exit(0);
+}
 if (args.includes("--sheet")) {
   // Comparison sheet: uvs reference | A | B | E | F | G, rows top-of-page + mid-page.
   const ref = opt("ref") ?? "C:/Users/xenos/AppData/Local/Temp/uvs-home.png";
@@ -257,6 +303,7 @@ if (args.includes("--sheet")) {
 }
 for (const v of VARIANTS) {
   console.log(`nav=${v}`);
+  if (MASTHEAD.includes(v) || (v === "F" && ONLY?.includes("F"))) await handoffStills(cdp, v);
   await stills(cdp, v);
   if (VIDEO) await video(cdp, v);
 }

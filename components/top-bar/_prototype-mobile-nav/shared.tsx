@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BriefcaseBusiness, House, LayoutGrid, Send, Sparkles, type LucideIcon } from "lucide-react";
 import { useScroll, useMotionValueEvent } from "framer-motion";
-import type { SectionId } from "@/app/data/portfolio";
+import type { Image as PortraitImage, SectionId } from "@/app/data/portfolio";
 import type { Brand, Channel, SectionView } from "@/app/data/site";
 import { BrandReveal } from "../scroll-motion";
 import { useActiveSection } from "../use-active-section";
@@ -12,6 +12,8 @@ export type MobileNavProps = {
   brand: Brand;
   sections: readonly [SectionView, ...SectionView[]];
   social: readonly Channel[];
+  /** The hero portrait, for the H/I bar avatar. */
+  portrait: PortraitImage;
 };
 
 export const sectionIcon = {
