@@ -40,6 +40,32 @@
   color: transparent;
 }
 
+/* The diagonal brand ring around the phone avatar (masthead and top bar). */
+@utility bg-brand-diagonal {
+  background-image: linear-gradient(135deg, var(--color-amber), var(--color-coral) 50%, var(--color-magenta));
+}
+
+/* Phone glass chrome (top bar, bottom tab and social capsules): a 1px amber-to-magenta hairline
+   ring, a floating shadow, the masthead avatar's magenta glow, and the active tab icon's coral glow. */
+@utility glass-ring {
+  background-image: linear-gradient(
+    115deg,
+    color-mix(in oklch, var(--color-amber) 45%, transparent),
+    rgb(255 255 255 / 0.1) 28%,
+    rgb(255 255 255 / 0.1) 72%,
+    color-mix(in oklch, var(--color-magenta) 45%, transparent)
+  );
+}
+@utility shadow-float {
+  box-shadow: 0 12px 36px -16px rgb(0 0 0 / 0.75);
+}
+@utility shadow-avatar {
+  box-shadow: 0 14px 36px -16px color-mix(in srgb, var(--color-magenta) 70%, transparent);
+}
+@utility glow-coral {
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-coral) 55%, transparent));
+}
+
 /* Backdrop dot grid, fading out from the top center. */
 @utility backdrop-dots {
   background-image: radial-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px);
@@ -64,6 +90,27 @@
     scroll-padding-top: 5rem;
     background-color: var(--color-canvas);
     color-scheme: dark;
+
+    /* Bottom dock metrics (components/mobile-nav): tab and social button sizes, with a tighter set
+       under 380px so the row fits a 360px phone. */
+    --dock-row: 48px;
+    --dock-icon: 20px;
+    --dock-gap: 8px;
+    --dock-tab: 42px;
+    --dock-act: 38px;
+  }
+  @media (width < 380px) {
+    html {
+      --dock-tab: 38px;
+      --dock-act: 36px;
+      --dock-gap: 6px;
+    }
+  }
+  /* Below lg the phone top bar is 56px (+ safe area); hash links land just under it. */
+  @media (width < 64rem) {
+    html {
+      scroll-padding-top: 4.5rem;
+    }
   }
   body {
     @apply bg-canvas font-sans text-ink antialiased selection:bg-coral/40;

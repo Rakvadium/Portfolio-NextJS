@@ -4,7 +4,8 @@ import type { SectionView } from "@/app/data/site";
 import { cn } from "@/lib/utils";
 
 /**
- * <section id={section.id}>. The lead section (Home) sits closer to the top bar. No scroll-mt:
+ * <section id={section.id}>. The lead section (Home) sits closer to the top bar (60px below lg, where
+ * the phone bar is transparent over the masthead). No scroll-mt:
  * html scroll-padding-top handles the fixed bar. When `section.heading` is set it renders the
  * SectionHeading first and points aria-labelledby at it, so the id convention lives here only.
  */
@@ -14,7 +15,7 @@ export function Section({ section, lead, children }: { section: SectionView; lea
     <section
       id={section.id}
       aria-labelledby={headingId}
-      className={cn(lead ? "pt-[76px] sm:pt-24" : "pt-20 sm:pt-28")}
+      className={cn(lead ? "pt-[60px] lg:pt-24" : "pt-20 sm:pt-28")}
     >
       {section.heading && <SectionHeading id={headingId} {...section.heading} />}
       {children}
