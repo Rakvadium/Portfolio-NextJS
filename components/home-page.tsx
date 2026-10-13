@@ -4,6 +4,7 @@ import type { SectionId } from "@/app/data/portfolio";
 import type { Site } from "@/app/data/site";
 import { Backdrop } from "./backdrop";
 import { TopBar } from "./top-bar/top-bar";
+import { MobileNavPrototype } from "./top-bar/_prototype-mobile-nav/mobile-nav-prototype";
 import { Section } from "./ui/section";
 import { Hero } from "./hero/hero";
 import { Skills } from "./skills";
@@ -25,7 +26,9 @@ export function HomePage({ site }: { site: Site }) {
   return (
     <div className="relative min-h-screen overflow-x-clip">
       <Backdrop />
-      <TopBar brand={site.brand} sections={site.sections} social={site.social} />
+      <MobileNavPrototype brand={site.brand} sections={site.sections} social={site.social}>
+        <TopBar brand={site.brand} sections={site.sections} social={site.social} />
+      </MobileNavPrototype>
       <main className="relative z-10 mx-auto max-w-[1200px] px-4 pb-36 sm:px-6">
         {site.sections.map((section, index) => (
           <Section key={section.id} section={section} lead={index === 0}>
