@@ -18,7 +18,7 @@ export type Profile = {
   readonly name: string;
   readonly title: string;
   readonly location: string;
-  /** Hero lead paragraph. Written for the hero; not split out of a longer bio at runtime. */
+  /** Hero lead paragraph. */
   readonly headline: string;
   readonly portrait: Image;
   readonly email: string;
@@ -68,7 +68,7 @@ export type Project = {
   readonly technologies: readonly [string, ...string[]];
   readonly screenshot: Image;
   readonly url: HttpsUrl;
-  /** Present only for open-source projects. Optional field, not a union of object shapes. */
+  /** Present only for open-source projects. */
   readonly repoUrl?: `https://github.com/${string}`;
 };
 
@@ -95,8 +95,6 @@ export const profile = {
   name: "Caleb Mills",
   title: "Senior Frontend Engineer",
   location: "Meridian, ID",
-  // Was bio paragraph 1 run through .replace("I'm a frontend skewed", "A frontend-skewed").
-  // "with 9+ years of experience" is cut: the Quick facts row derives and shows it.
   headline:
     "A frontend-skewed software engineer. I obsess over intuitive UI and UX, and I also build the solid backends and APIs behind them.",
   portrait: { src: "/calebHeadshotAi.jpg", alt: "Portrait of Caleb Mills" },
@@ -163,7 +161,6 @@ export const roles = [
   },
 ] as const satisfies readonly Role[];
 
-/** Replaces the old flat `skills` list and G's hand-copied SKILL_GROUPS. The flat list is derived. */
 export const skillGroups = [
   {
     id: "frontend",
@@ -180,7 +177,7 @@ export type SkillName = (typeof skillGroups)[number]["skills"][number];
 /** Hero "Core stack" chips and the Skills intro sentence. Typed against declared skills: a typo fails tsc. */
 export const coreStack = ["React", "TypeScript", "Next.js", "Node.js"] as const satisfies readonly SkillName[];
 
-/** Skills section closing line (was bio paragraph 2, sentence 3). */
+/** Skills section closing line. */
 export const skillsFootnote = "I use AI coding agents every day, and I spend a lot of time validating what they build.";
 
 export const projects = [
@@ -191,7 +188,6 @@ export const projects = [
     summary:
       "The website for GenHealth’s outpatient mental health clinic, covering psychiatry, therapy, TMS (transcranial magnetic stimulation), and Spravato care across Arizona and Idaho.",
     contribution: "I rebuilt and launched the site, including a Convex-backed CMS.",
-    // "NextJS" -> "Next.js", "ConvexDB" -> "Convex": product names as their vendors write them.
     technologies: ["React", "Next.js", "TypeScript", "Convex"],
     screenshot: { src: "/genhealthaz.png", alt: "GenHealthAZ home page screenshot" },
     url: "https://www.genhealthaz.com",

@@ -4,11 +4,10 @@
 // children. lg+ uses components/top-bar instead.
 import { useMemo, type ReactNode } from "react";
 import type { SectionView } from "@/app/data/site";
+import { mapNonEmpty } from "@/lib/non-empty";
 import { useActiveSection } from "@/components/top-bar/use-active-section";
 import { MobileTopBar, type MobileTopBarProps } from "./mobile-top-bar";
 import { SectionTabs } from "./section-tabs";
-
-type SectionId = SectionView["id"];
 
 export function MobileNavigation({
   brand,
@@ -20,7 +19,7 @@ export function MobileNavigation({
   /** The dock's right-hand capsule (SocialDock). */
   children: ReactNode;
 }) {
-  const ids = useMemo(() => sections.map((s) => s.id) as [SectionId, ...SectionId[]], [sections]);
+  const ids = useMemo(() => mapNonEmpty(sections, (s) => s.id), [sections]);
   const active = useActiveSection(ids);
   return (
     <>

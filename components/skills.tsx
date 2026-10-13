@@ -1,5 +1,5 @@
 // Section body for #skills (the heading comes from <Section>): one tile per group with its
-// "what for" note and chips, then the footnote line. Static: no carousel, no client code beyond Tile.
+// "what for" note and chips, then the footnote line.
 import type { SkillsView } from "@/app/data/site";
 import { Chip } from "@/components/ui/chip";
 import { Tile, type Glow } from "@/components/ui/tile";

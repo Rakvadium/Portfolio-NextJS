@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 /**
  * The brand name and title fade and slide in over scrollY 200-330px while the hero h1 fades out over
  * 150-300px (components/hero/scroll-motion.tsx). The slide is a transform, cancelled for reduced
- * motion by `motion-static`; the fade runs for everyone, as in G.
+ * motion by `motion-static`; the fade runs for everyone.
  */
 export function BrandReveal({ children, className }: { children: ReactNode; className?: string }) {
   const { scrollY } = useScroll();
@@ -21,7 +21,7 @@ export function BrandReveal({ children, className }: { children: ReactNode; clas
   );
 }
 
-/** 1px gradient line under the bar, scaled to page scroll progress. Runs under reduced motion, as in G. */
+/** 1px gradient line under the bar, scaled to page scroll progress. Runs under reduced motion. */
 export function ScrollProgress() {
   const { scrollYProgress } = useScroll();
   return <motion.div aria-hidden style={{ scaleX: scrollYProgress }} className="bg-brand h-px origin-left" />;

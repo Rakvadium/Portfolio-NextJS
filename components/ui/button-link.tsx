@@ -18,11 +18,8 @@ export type ButtonLinkProps = {
   children: ReactNode;
   /** Leading icon. */
   icon?: LucideIcon;
-  /** Trailing arrow. */
   arrow?: TrailingArrow;
   className?: string;
-  /** Accessible name when the visible label is not enough. */
-  "aria-label"?: string;
 };
 
 const toneClass: Record<ButtonTone, string> = {
@@ -40,7 +37,7 @@ const arrowIcon: Record<TrailingArrow, { Icon: LucideIcon; nudge: string }> = {
 };
 
 /** http(s) hrefs open in a new tab; "#id", mailto: and tel: stay in the tab. */
-export function ButtonLink({ href, tone, children, icon: Icon, arrow, className, ...aria }: ButtonLinkProps) {
+export function ButtonLink({ href, tone, children, icon: Icon, arrow, className }: ButtonLinkProps) {
   const external = /^https?:/.test(href);
   const trailing = arrow ? arrowIcon[arrow] : undefined;
   return (
@@ -49,7 +46,6 @@ export function ButtonLink({ href, tone, children, icon: Icon, arrow, className,
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       className={cn("group/button inline-flex items-center text-[15px]", toneClass[tone], className)}
-      {...aria}
     >
       {Icon && <Icon aria-hidden className="h-4 w-4" />}
       {children}

@@ -1,7 +1,6 @@
 // The <section> shell every page section sits in, and the heading block.
 import type { ReactNode } from "react";
 import type { SectionView } from "@/app/data/site";
-import { cn } from "@/lib/utils";
 
 /**
  * <section id={section.id}>. The lead section (Home) sits closer to the top bar (60px below lg, where
@@ -15,7 +14,7 @@ export function Section({ section, lead, children }: { section: SectionView; lea
     <section
       id={section.id}
       aria-labelledby={headingId}
-      className={cn(lead ? "pt-[60px] lg:pt-24" : "pt-20 sm:pt-28")}
+      className={lead ? "pt-[60px] lg:pt-24" : "pt-20 sm:pt-28"}
     >
       {section.heading && <SectionHeading id={headingId} {...section.heading} />}
       {children}

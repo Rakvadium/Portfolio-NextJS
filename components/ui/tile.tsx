@@ -12,8 +12,6 @@ export type TileProps = {
   children: ReactNode;
   /** Cursor-glow color. Default "coral". */
   glow?: Glow;
-  /** Hover lift + shadow. Default false: G turned it off for every tile on the page. */
-  lift?: boolean;
   /** Default "none". */
   motion?: TileMotion;
   /** Rendered element. `li` lets list items be tiles without a wrapper. */
@@ -39,7 +37,6 @@ function trackPointer(e: PointerEvent<HTMLElement>) {
 export function Tile({
   children,
   glow = "coral",
-  lift = false,
   motion = "none",
   as: As = "div",
   className,
@@ -49,7 +46,6 @@ export function Tile({
     <As
       className={cn("tile", motionClass[motion], className)}
       data-tone={glow}
-      data-lift={lift || undefined}
       onPointerMove={trackPointer}
       {...rest}
     >

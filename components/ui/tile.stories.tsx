@@ -6,7 +6,6 @@ const meta = {
   title: "UI/Tile",
   component: Tile,
   args: {
-    glow: "coral",
     children: (
       <div className="p-8">
         <p className="font-display text-2xl font-bold">Glass tile</p>
@@ -26,7 +25,6 @@ type Story = StoryObj<typeof meta>;
 export const Coral: Story = {};
 export const Amber: Story = { args: { glow: "amber" } };
 export const Magenta: Story = { args: { glow: "magenta" } };
-export const Lift: Story = { args: { lift: true } };
 export const Enter: Story = { args: { motion: "enter" } };
 
 /** Pointer movement writes the cursor position that the two glow layers read; hover shows them. */

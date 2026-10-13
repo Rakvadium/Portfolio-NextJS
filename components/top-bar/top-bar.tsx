@@ -7,7 +7,7 @@ import { ScrollProgress } from "./scroll-motion";
 import { SectionNavigation } from "./section-navigation";
 import { SocialLinks } from "./social-links";
 
-export type TopBarProps = {
+type TopBarProps = {
   brand: Brand;
   sections: readonly [SectionView, ...SectionView[]];
   social: readonly Channel[];

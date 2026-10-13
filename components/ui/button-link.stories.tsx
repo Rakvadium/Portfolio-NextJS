@@ -23,7 +23,7 @@ export const Quiet: Story = { args: { tone: "quiet", href: "#experience", childr
 
 /** http(s) links open in a new tab with rel=noopener; in-page and mailto links do not. */
 export const External: Story = {
-  args: { tone: "brand", href: "https://www.genhealthaz.com", children: "Visit genhealthaz.com", arrow: "up-right" },
+  args: { href: "https://www.genhealthaz.com", children: "Visit genhealthaz.com", arrow: "up-right" },
   play: async ({ canvasElement }) => {
     const link = within(canvasElement).getByRole("link", { name: /Visit genhealthaz.com/ });
     await expect(link).toHaveAttribute("target", "_blank");

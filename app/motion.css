@@ -5,7 +5,7 @@
  *    the portrait parallax, and the progress line. Framer works in every evergreen browser, which CSS
  *    scroll timelines do not (Firefox). Their motion values start at the at-top pose on server and client,
  *    so hydration matches. Transforms carry `motion-static`, which the rule below cancels for
- *    reduced-motion users; opacity (the handoff fade) and the progress line still run for them, as in G.
+ *    reduced-motion users; opacity (the handoff fade) and the progress line still run for them.
  *    No component reads the media query in JS.
  *    The phone masthead -> top bar morph (components/mobile-nav) is this mechanism too, written as plain
  *    motion values from a pure per-frame function (morph.ts) instead of useTransform ranges.

@@ -17,15 +17,9 @@ export type ExplorerItem = {
   readonly panel: ReactNode;
 };
 
-export type RoleExplorerProps = {
-  items: NonEmpty<ExplorerItem>;
-  /** Accessible name of the tablist. */
-  label?: string;
-};
-
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export function RoleExplorer({ items, label = "Roles, newest first" }: RoleExplorerProps) {
+export function RoleExplorer({ items }: { items: NonEmpty<ExplorerItem> }) {
   const [active, setActive] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const uid = useId();
@@ -50,7 +44,7 @@ export function RoleExplorer({ items, label = "Roles, newest first" }: RoleExplo
       <LayoutGroup id={uid}>
         <div className="grid grid-cols-12 gap-4">
           <Tile glow="amber" motion="reveal" className="col-span-4 self-start">
-            <div role="tablist" aria-orientation="vertical" aria-label={label} className="relative p-3">
+            <div role="tablist" aria-orientation="vertical" aria-label="Roles, newest first" className="relative p-3">
               <span aria-hidden className="absolute bottom-8 left-[27px] top-8 w-px bg-white/10" />
               {items.map((item, i) => {
                 const selected = i === active;

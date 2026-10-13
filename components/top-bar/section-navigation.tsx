@@ -7,13 +7,12 @@
 import { useId, useMemo } from "react";
 import { LayoutGroup, MotionConfig, motion } from "framer-motion";
 import type { SectionView } from "@/app/data/site";
+import { mapNonEmpty } from "@/lib/non-empty";
 import { cn } from "@/lib/utils";
 import { useActiveSection } from "./use-active-section";
 
-type SectionId = SectionView["id"];
-
 export function SectionNavigation({ sections }: { sections: readonly [SectionView, ...SectionView[]] }) {
-  const ids = useMemo(() => sections.map((s) => s.id) as [SectionId, ...SectionId[]], [sections]);
+  const ids = useMemo(() => mapNonEmpty(sections, (s) => s.id), [sections]);
   const active = useActiveSection(ids);
   const groupId = useId();
 

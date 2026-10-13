@@ -104,7 +104,7 @@ export function useMastheadMorph(): MastheadMorph {
     if (masthead) resize.observe(masthead);
     if (bar.current) resize.observe(bar.current);
     let alive = true;
-    document.fonts?.ready.then(() => alive && measure());
+    document.fonts.ready.then(() => alive && measure());
     window.addEventListener("scroll", apply, { passive: true });
     window.addEventListener("resize", measure);
     window.addEventListener("orientationchange", measure);

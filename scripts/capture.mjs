@@ -418,7 +418,7 @@ async function captureMobileNav() {
     }
   }
 
-  // The brief's resize: 390 -> 360 mid-page, motion on and off.
+  // Resize 390 -> 360 mid-page, motion on and off.
   for (const reduced of [false, true]) {
     await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: reduced ? "reduce" : "no-preference" }] });
     await setPhone(cdp, 390, 844);

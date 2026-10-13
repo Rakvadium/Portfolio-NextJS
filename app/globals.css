@@ -5,7 +5,6 @@
    utilities (bg-canvas, text-ink, text-body, text-soft, ...) or var(--color-*) in CSS. */
 @theme static {
   --color-canvas: #111014; /* page background, top bar at 75% */
-  --color-raised: #1a181e; /* menu popover surface */
   --color-ink: #f3ede6; /* headings, default text */
   --color-chip: #ece7f0; /* chip text, company line */
   --color-mute: #e4dfe8; /* inactive role title, portrait caption */
@@ -143,19 +142,6 @@
   }
   .tile[data-tone="magenta"] {
     --glow: var(--color-magenta);
-  }
-  .tile[data-lift] {
-    transition:
-      translate 500ms ease-out,
-      box-shadow 500ms ease-out,
-      background-color 500ms ease-out;
-  }
-  .tile[data-lift]:hover {
-    translate: 0 -2px;
-    background-color: rgb(255 255 255 / 0.05);
-    box-shadow:
-      0 24px 60px -28px rgb(255 106 85 / 0.45),
-      inset 0 1px 0 0 rgb(255 255 255 / 0.08);
   }
   /* Two glow layers that follow the cursor: a soft fill and a 1px masked rim. */
   .tile::before,

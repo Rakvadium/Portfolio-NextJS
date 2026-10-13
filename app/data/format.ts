@@ -3,7 +3,7 @@
 import type { Period, YearMonth } from "./portfolio.ts";
 
 const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] as const;
-const DASH = " – "; // spaced en dash, as G rendered ranges
+const DASH = " – "; // spaced en dash
 const PRESENT = "Present";
 
 const NUMBER_WORDS = [

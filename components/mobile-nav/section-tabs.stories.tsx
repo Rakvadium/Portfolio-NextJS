@@ -6,7 +6,7 @@ import { SectionTabs } from "./section-tabs";
 /**
  * The dock's left capsule at the smallest phone the layout supports (360px, the tight metrics).
  * Hash links are not clicked here: the story test page has a <base>, so a click would navigate away
- * (SYNTHESIS reconciliation 3); `scripts/capture.mjs mobile-nav` taps them on the real page.
+ *; `scripts/capture.mjs mobile-nav` taps them on the real page.
  */
 const meta = {
   title: "Mobile nav/SectionTabs",
