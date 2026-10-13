@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { morphFrame, morphGeometry, type MorphFrame, type MorphGeometry } from "./morph.ts";
+import { readFileSync } from "node:fs";
+import { MORPH_DOM, morphFrame, morphGeometry, type MorphFrame, type MorphGeometry } from "./morph.ts";
 
-// Roughly the 390px page: masthead pieces in page coordinates, bar slots in viewport coordinates.
 const from: MorphGeometry["from"] = {
   avatar: { x: 36, y: 150, width: 80, height: 80, fontSize: 16 },
   name: { x: 36, y: 240, width: 256, height: 42, fontSize: 44 },
@@ -15,13 +15,12 @@ const to: MorphGeometry["to"] = {
 };
 const geometry = morphGeometry(from, to, 56);
 
-/** Rounds every number to 4 decimals, so expectations can be written as literals. */
 function rounded(frame: MorphFrame) {
   return JSON.parse(JSON.stringify(frame, (_, v) => (typeof v === "number" ? Math.round(v * 1e4) / 1e4 : v)));
 }
 
 test("the range ends as the title line slides under the bar", () => {
-  assert.equal(geometry.range, 264); // 292 + 28 - 56
+  assert.equal(geometry.range, 264);
 });
 
 test("a masthead that starts almost under the bar still gets the minimum range", () => {
@@ -44,17 +43,16 @@ test("at the top every piece sits on its masthead spot and the bar is clear", ()
 });
 
 test("halfway, the avatar has nearly docked while the text still rides the page", () => {
-  // early = 1 - 0.5^3 = 0.875, late = 0.5^1.6 = 0.329877
   assert.deepEqual(rounded(morphFrame(geometry, 132)), {
     progress: 0.5,
-    barOpacity: 0.2308, // (0.5 - 0.35) / 0.65
+    barOpacity: 0.2308,
     slotOpacity: 0,
-    mastheadOpacity: 0.5, // 1 - (0.5 - 0.25) / 0.5
+    mastheadOpacity: 0.5,
     underlineOpacity: 0,
     pieces: {
-      avatar: { x: 18.5, y: 12.75, scale: 0.475 }, // y: 18 -> 12, scale 1 -> 0.4
-      name: { x: 55.25, y: 75.792, scale: 0.7901 }, // y: 108 -> 10.3636, scale 1 -> 16/44
-      title: { x: 55.25, y: 115.3566, scale: 0.89 }, // y: 160 -> 24.6667, scale 1 -> 12/18
+      avatar: { x: 18.5, y: 12.75, scale: 0.475 },
+      name: { x: 55.25, y: 75.792, scale: 0.7901 },
+      title: { x: 55.25, y: 115.3566, scale: 0.89 },
     },
   });
 });
@@ -68,12 +66,11 @@ test("at the end of the range every piece sits on its bar slot, text centred on 
     underlineOpacity: 0,
     pieces: {
       avatar: { x: 16, y: 12, scale: 0.4 },
-      name: { x: 58, y: 10.3636, scale: 0.3636 }, // 9 + 18/2 - 42 * (16/44) / 2
-      title: { x: 58, y: 24.6667, scale: 0.6667 }, // 27 + 14/2 - 28 * (12/18) / 2
+      name: { x: 58, y: 10.3636, scale: 0.3636 },
+      title: { x: 58, y: 24.6667, scale: 0.6667 },
     },
   };
   assert.deepEqual(rounded(morphFrame(geometry, 264)), docked);
-  // A deep link or mid-page reload lands in the same docked state.
   assert.deepEqual(rounded(morphFrame(geometry, 2000)), docked);
 });
 
@@ -81,4 +78,10 @@ test("overscroll above the top moves the pieces with the page and does not start
   const frame = rounded(morphFrame(geometry, -20));
   assert.equal(frame.progress, 0);
   assert.deepEqual(frame.pieces.avatar, { x: 36, y: 170, scale: 1 });
+});
+
+test("motion.css styles the attributes the morph hook writes", () => {
+  const css = readFileSync(new URL("../../app/motion.css", import.meta.url), "utf8");
+  assert.ok(css.includes(`[${MORPH_DOM.masthead}][${MORPH_DOM.morphing}] [${MORPH_DOM.piece}]`));
+  assert.ok(css.includes(`var(${MORPH_DOM.opacity}`));
 });

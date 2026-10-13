@@ -1,17 +1,15 @@
 @import "tailwindcss";
 @import "./motion.css";
 
-/* Design tokens: the only place a color from the design lives. Components use the generated
-   utilities (bg-canvas, text-ink, text-body, text-soft, ...) or var(--color-*) in CSS. */
 @theme static {
-  --color-canvas: #111014; /* page background, top bar at 75% */
-  --color-ink: #f3ede6; /* headings, default text */
-  --color-chip: #ece7f0; /* chip text, company line */
-  --color-mute: #e4dfe8; /* inactive role title, portrait caption */
-  --color-body: #dcd7e0; /* body copy */
-  --color-soft: #c9c5cf; /* secondary copy; the floor for text on canvas */
-  --color-peach: #ffb08a; /* fact and contact icons */
-  --color-apricot: #ffc59e; /* active role year */
+  --color-canvas: #111014;
+  --color-ink: #f3ede6;
+  --color-chip: #ece7f0;
+  --color-mute: #e4dfe8;
+  --color-body: #dcd7e0;
+  --color-soft: #c9c5cf;
+  --color-peach: #ffb08a;
+  --color-apricot: #ffc59e;
 
   --color-amber: #ffb547;
   --color-coral: #ff6a55;
@@ -21,14 +19,12 @@
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Fonts: app/fonts.ts sets --font-bricolage / --font-dm-sans on <html> (and on the Storybook root).
-   `inline` so the var resolves where the utility is used, not at :root. */
+/* `inline` so the var resolves where the utility is used, not at :root. */
 @theme inline {
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-bricolage), var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* The brand gradient, once. */
 @utility bg-brand {
   background-image: linear-gradient(90deg, var(--color-amber) 0%, var(--color-coral) 45%, var(--color-magenta) 100%);
 }
@@ -39,13 +35,10 @@
   color: transparent;
 }
 
-/* The diagonal brand ring around the phone avatar (masthead and top bar). */
 @utility bg-brand-diagonal {
   background-image: linear-gradient(135deg, var(--color-amber), var(--color-coral) 50%, var(--color-magenta));
 }
 
-/* Phone glass chrome (top bar, bottom tab and social capsules): a 1px amber-to-magenta hairline
-   ring, a floating shadow, the masthead avatar's magenta glow, and the active tab icon's coral glow. */
 @utility glass-ring {
   background-image: linear-gradient(
     115deg,
@@ -65,14 +58,12 @@
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-coral) 55%, transparent));
 }
 
-/* Backdrop dot grid, fading out from the top center. */
 @utility backdrop-dots {
   background-image: radial-gradient(rgb(255 255 255 / 0.045) 1px, transparent 1px);
   background-size: 28px 28px;
   mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
 }
 
-/* The magenta-to-coral glow in the contact tile's corner. */
 @utility contact-glow {
   background: radial-gradient(
     circle,
@@ -84,14 +75,11 @@
 
 @layer base {
   html {
-    /* The fixed top bar is h-16 (+1px progress). Native hash navigation lands below it and the URL
-       hash updates, so links are shareable and Back works. */
-    scroll-padding-top: 5rem;
+    --bar-h: 4rem;
+    scroll-padding-top: calc(var(--bar-h) + 1rem);
     background-color: var(--color-canvas);
     color-scheme: dark;
 
-    /* Bottom dock metrics (components/mobile-nav): tab and social button sizes, with a tighter set
-       under 380px so the row fits a 360px phone. */
     --dock-row: 48px;
     --dock-icon: 20px;
     --dock-gap: 8px;
@@ -105,10 +93,9 @@
       --dock-gap: 6px;
     }
   }
-  /* Below lg the phone top bar is 56px (+ safe area); hash links land just under it. */
   @media (width < 64rem) {
     html {
-      scroll-padding-top: 4.5rem;
+      --bar-h: 3.5rem;
     }
   }
   body {
@@ -122,7 +109,6 @@
   }
 }
 
-/* Tile chrome. tile.tsx sets data-tone and, on pointermove, --x/--y. */
 @layer components {
   .tile {
     --glow: var(--color-coral);
@@ -143,7 +129,6 @@
   .tile[data-tone="magenta"] {
     --glow: var(--color-magenta);
   }
-  /* Two glow layers that follow the cursor: a soft fill and a 1px masked rim. */
   .tile::before,
   .tile::after {
     content: "";

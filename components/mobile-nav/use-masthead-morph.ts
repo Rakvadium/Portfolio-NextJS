@@ -1,29 +1,16 @@
 "use client";
-// DOM side of the masthead morph: measures the masthead pieces and the bar slots, then writes
-// morphFrame (morph.ts) into motion values on every scroll. All of the math is in morph.ts.
-//
-// Re-measures on resize, orientation change, fonts ready, and masthead or bar resize. Masthead
-// rects are stored in page coordinates, so a deep link or mid-page reload lands in the docked frame.
-//
-// While a measurement is live, the masthead gets `data-morphing` and a `--masthead-opacity` custom
-// property, and its underline's opacity is written directly. app/motion.css turns those into: no
-// reduced-motion preference, the masthead pieces are transparent and the bar draws flying copies;
-// reduced motion, the copies are display:none and the masthead pieces fade out while the bar's
-// identity fades in (a crossfade, no movement).
 import { createRef, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { useMotionValue, type MotionValue } from "framer-motion";
-import { DOCKED_FRAME, MORPH_PIECES, morphFrame, morphGeometry, type Box, type MorphGeometry, type MorphPiece } from "./morph";
+import { DOCKED_FRAME, MORPH_DOM, MORPH_PIECES, morphFrame, morphGeometry, type Box, type MorphGeometry, type MorphPiece } from "./morph";
 
 type PieceValues = { x: MotionValue<number>; y: MotionValue<number>; scale: MotionValue<number> };
 
 export type MastheadMorph = {
   bar: RefObject<HTMLElement | null>;
   slots: Record<MorphPiece, RefObject<HTMLElement | null>>;
-  /** True while a masthead is on screen and measured: the bar shows the flying copies. */
   measured: boolean;
   barOpacity: MotionValue<number>;
   slotOpacity: MotionValue<number>;
-  /** 0 ink -> 1 soft: the flying title's colour on its way to the bar's muted title. */
   progress: MotionValue<number>;
   pieces: Record<MorphPiece, PieceValues>;
 };
@@ -48,8 +35,8 @@ export function useMastheadMorph(): MastheadMorph {
   const values = useRef({ barOpacity, slotOpacity, progress, pieces }).current;
 
   useLayoutEffect(() => {
-    const masthead = document.querySelector<HTMLElement>("[data-masthead]");
-    const underline = masthead?.querySelector<HTMLElement>("[data-masthead-underline]");
+    const masthead = document.querySelector<HTMLElement>(`[${MORPH_DOM.masthead}]`);
+    const underline = masthead?.querySelector<HTMLElement>(`[${MORPH_DOM.underline}]`);
     let geometry: MorphGeometry | undefined;
 
     const apply = () => {
@@ -63,13 +50,13 @@ export function useMastheadMorph(): MastheadMorph {
         values.pieces[key].y.set(frame.pieces[key].y);
         values.pieces[key].scale.set(frame.pieces[key].scale);
       }
-      masthead?.style.setProperty("--masthead-opacity", String(frame.mastheadOpacity));
+      masthead?.style.setProperty(MORPH_DOM.opacity, String(frame.mastheadOpacity));
       if (underline) underline.style.opacity = String(frame.underlineOpacity);
     };
 
     const reset = () => {
-      masthead?.removeAttribute("data-morphing");
-      masthead?.style.removeProperty("--masthead-opacity");
+      masthead?.removeAttribute(MORPH_DOM.morphing);
+      masthead?.style.removeProperty(MORPH_DOM.opacity);
       underline?.style.removeProperty("opacity");
     };
     const release = () => {
@@ -80,21 +67,20 @@ export function useMastheadMorph(): MastheadMorph {
 
     const measure = () => {
       const barEl = bar.current;
-      const pieceEls = masthead && MORPH_PIECES.map((k) => masthead.querySelector(`[data-morph-piece="${k}"]`));
+      const pieceEls = masthead && MORPH_PIECES.map((k) => masthead.querySelector(`[${MORPH_DOM.piece}="${k}"]`));
       const slotEls = MORPH_PIECES.map((k) => slots[k].current);
       if (!barEl || !masthead || !pieceEls?.every(Boolean) || !slotEls.every(Boolean)) {
-        // Nothing to morph from: the bar is simply docked.
         release();
         values.barOpacity.set(DOCKED_FRAME.barOpacity);
         values.slotOpacity.set(DOCKED_FRAME.slotOpacity);
         return;
       }
-      if (getComputedStyle(masthead).display === "none") return release(); // lg+: the bar is hidden too
+      if (getComputedStyle(masthead).display === "none") return release();
       const scrollY = window.scrollY;
       const box = (els: (Element | null)[], y: number) =>
         Object.fromEntries(MORPH_PIECES.map((k, i) => [k, measureBox(els[i]!, y)])) as Record<MorphPiece, Box>;
       geometry = morphGeometry(box(pieceEls, scrollY), box(slotEls, 0), barEl.getBoundingClientRect().bottom);
-      masthead.setAttribute("data-morphing", "");
+      masthead.setAttribute(MORPH_DOM.morphing, "");
       setMeasured(true);
       apply();
     };

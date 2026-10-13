@@ -41,8 +41,6 @@ const option = (name) => {
 };
 const positional = rest.filter((a, i) => !a.startsWith("--") && !(i > 0 && ["--base", "--dir"].includes(rest[i - 1])));
 
-/* ------------------------------------------------------------------ chrome + CDP */
-
 async function launchChrome() {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-capture-"));
   const proc = spawn(CHROME, [
@@ -129,7 +127,6 @@ async function screenshot(cdp, file, { full = false } = {}) {
   console.log(`  ${path.relative(process.cwd(), file)}`);
 }
 
-/** Collects console errors/warnings and uncaught exceptions for the life of the page. */
 function collectProblems(cdp) {
   const problems = [];
   cdp.on("Runtime.consoleAPICalled", (p) => {
@@ -145,8 +142,6 @@ function collectProblems(cdp) {
 }
 
 const NO_SMOOTH = `(() => { const s = document.createElement('style'); s.textContent = 'html{scroll-behavior:auto!important} nextjs-portal{display:none!important}'; document.head.appendChild(s); })()`;
-
-/* ------------------------------------------------------------------ page */
 
 async function capturePage() {
   const base = option("base") ?? "http://127.0.0.1:3201";
@@ -186,7 +181,6 @@ async function capturePage() {
   return problems;
 }
 
-/** Reloads (so mount entrances are in the video), then scrolls top to bottom with an ease-in-out. */
 async function recordScroll(cdp, vp, out) {
   const [width, height] = VIEWPORTS[vp];
   const frameDir = fs.mkdtempSync(path.join(os.tmpdir(), "portfolio-frames-"));
@@ -236,8 +230,6 @@ async function recordScroll(cdp, vp, out) {
   console.log(`  ${path.relative(process.cwd(), out)} (${frames.length} frames, ${(frames.at(-1).ts - frames[0].ts).toFixed(1)}s)`);
 }
 
-/* ------------------------------------------------------------------ stories */
-
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2", ".woff": "font/woff", ".ico": "image/x-icon" };
 
 function serveDir(dir) {
@@ -266,11 +258,17 @@ async function captureStories() {
     await setViewport(cdp, vp);
     const globals = vp === "phone" ? "&globals=viewport.value:phone" : "";
     await navigate(cdp, `${base}/iframe.html?id=${id}&viewMode=story${globals}`);
-    for (let i = 0; i < 50; i++) {
-      if (await cdp.evaluate("!!document.querySelector('#storybook-root')?.children.length")) break;
-      await sleep(200);
+    for (let i = 0; i < 100; i++) {
+      const settled = await cdp.evaluate(`(() => {
+        const phase = window.__STORYBOOK_PREVIEW__?.currentRender?.phase;
+        const animating = document.getAnimations().some(
+          (a) => a.playState === "running" && a.effect?.getComputedTiming().endTime !== Infinity,
+        );
+        return ["finished", "errored", "aborted"].includes(phase) && !animating;
+      })()`);
+      if (settled) break;
+      await sleep(100);
     }
-    await sleep(2500); // play functions and entrance animations
     if (mods.includes("hover")) {
       const box = await cdp.evaluate(`(() => { const r = document.querySelector(".tile")?.getBoundingClientRect(); return r && { x: r.left + r.width * 0.3, y: r.top + r.height * 0.4 }; })()`);
       if (box) await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: box.x, y: box.y });
@@ -283,10 +281,6 @@ async function captureStories() {
   return problems;
 }
 
-/* ------------------------------------------------------------------ mobile nav */
-
-// In-page probes, defined on every call (navigation clears them). Each returns plain data; the
-// assertions live in Node below.
 const PROBES = `
 const visible = (sel) => [...document.querySelectorAll(sel)].find((e) => e.checkVisibility());
 const P = {
@@ -298,7 +292,6 @@ const P = {
   slotOpacity: () => +getComputedStyle(document.querySelector('[data-morph-slot="avatar"]')).opacity,
   copiesShown: () => [...document.querySelectorAll("[data-morph-copy]")].some((c) => c.checkVisibility()),
   mastheadPiecesOpacity: () => [...document.querySelectorAll("[data-morph-piece]")].map((e) => +getComputedStyle(e).opacity),
-  // Docked: each flying copy over its bar slot. Worst px gap of left edges, vertical centres, avatar width.
   dockError: () => {
     let worst = 0;
     for (const k of ["avatar", "name", "title"]) {
@@ -310,7 +303,6 @@ const P = {
     }
     return Math.round(worst * 100) / 100;
   },
-  // A tap at the centre of each dock control: does it reach the control? And the dock's extent.
   dock: () => {
     const nav = visible('nav[aria-label="Sections"]');
     const social = document.querySelector('[role="group"][aria-label="Social links"]');
@@ -388,7 +380,6 @@ async function captureMobileNav() {
         check((await probe("P.mastheadPiecesOpacity()")).every((o) => o === 1), "reduced motion: masthead pieces stay visible");
       }
 
-      // Tabs in page order, with the page's own scroll behaviour (smooth unless reduced motion).
       await cdp.evaluate(`document.querySelectorAll("style").forEach((s) => { if (s.textContent.includes("scroll-behavior:auto")) s.textContent = "nextjs-portal{display:none!important}"; })`);
       for (const id of ["skills", "experience", "projects", "contact", "home"]) {
         const label = id[0].toUpperCase() + id.slice(1);
@@ -418,7 +409,6 @@ async function captureMobileNav() {
     }
   }
 
-  // Resize 390 -> 360 mid-page, motion on and off.
   for (const reduced of [false, true]) {
     await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: reduced ? "reduce" : "no-preference" }] });
     await setPhone(cdp, 390, 844);
@@ -437,8 +427,6 @@ async function captureMobileNav() {
   problems.push(...failures.map((f) => `check failed: ${f}`));
   return problems;
 }
-
-/* ------------------------------------------------------------------ main */
 
 const run = { page: capturePage, stories: captureStories, "mobile-nav": captureMobileNav }[mode];
 if (!run) {
