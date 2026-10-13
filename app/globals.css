@@ -64,13 +64,34 @@
   mask-image: radial-gradient(ellipse at 50% 0%, #000 0%, transparent 70%);
 }
 
+/* The magenta-to-coral glow as it looked under blur(64px), painted as gradients: a blur filter here stalled
+   painting on iPhones. Stops come from `node scripts/glow-stops.mjs 64 0:28 112:0` and `64 0:0 112:10 142.6:0`. */
 @utility contact-glow {
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--color-magenta) 28%, transparent),
-    color-mix(in srgb, var(--color-coral) 10%, transparent) 55%,
-    transparent 70%
-  );
+  background:
+    radial-gradient(
+      circle 304px,
+      color-mix(in srgb, var(--color-magenta) 9.55%, transparent) 0%,
+      color-mix(in srgb, var(--color-magenta) 8.52%, transparent) 12.5%,
+      color-mix(in srgb, var(--color-magenta) 6.02%, transparent) 25%,
+      color-mix(in srgb, var(--color-magenta) 3.35%, transparent) 37.5%,
+      color-mix(in srgb, var(--color-magenta) 1.45%, transparent) 50%,
+      color-mix(in srgb, var(--color-magenta) 0.48%, transparent) 62.5%,
+      color-mix(in srgb, var(--color-magenta) 0.12%, transparent) 75%,
+      color-mix(in srgb, var(--color-magenta) 0.02%, transparent) 87.5%,
+      transparent
+    ),
+    radial-gradient(
+      circle 334.5px,
+      color-mix(in srgb, var(--color-coral) 5.17%, transparent) 0%,
+      color-mix(in srgb, var(--color-coral) 5.03%, transparent) 12.5%,
+      color-mix(in srgb, var(--color-coral) 4.4%, transparent) 25%,
+      color-mix(in srgb, var(--color-coral) 3.11%, transparent) 37.5%,
+      color-mix(in srgb, var(--color-coral) 1.65%, transparent) 50%,
+      color-mix(in srgb, var(--color-coral) 0.63%, transparent) 62.5%,
+      color-mix(in srgb, var(--color-coral) 0.17%, transparent) 75%,
+      color-mix(in srgb, var(--color-coral) 0.03%, transparent) 87.5%,
+      transparent
+    );
 }
 
 @layer base {
