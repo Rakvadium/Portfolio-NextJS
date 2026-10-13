@@ -3,6 +3,7 @@
 //
 //   node scripts/capture.mjs page    [--base URL] [--reduced-motion] [--video]
 //   node scripts/capture.mjs stories [--base URL | --dir storybook-static] <story-id>[@phone][@full] ...
+//   node scripts/capture.mjs mobile-nav [--base URL]
 //
 // page:    screenshots of the full scroll at 1280x800 and 390x844, a mid-handoff frame at scrollY=260,
 //          and with --video a scroll-through MP4 per viewport (needs ffmpeg: FFMPEG env or on PATH).
@@ -12,6 +13,12 @@
 //          `@phone` renders at 390x844 with the phone viewport global; `@full` captures the whole page;
 //          `@hover` moves the mouse over the first tile first (shows the cursor glow).
 //          `--dir` serves a built Storybook from disk on a free port.
+// mobile-nav: the phone navigation below lg, at 390x844 and 360x780 (2x), reduced motion off and on.
+//          Masthead -> bar morph frames at scrollY 0/40/80/120/160/200 and scrolled into Experience,
+//          then behaviour checks: one visible h1, the dock fits, tab taps set the hash and land below
+//          the bar, the bar title follows the sections (Contact at the bottom), socials are visible
+//          and tappable at top and bottom, a 390 -> 360 resize mid-page and a reload at #experience
+//          both land docked. Frames go to captures/mobile-nav-final/; a failed check exits 1.
 //
 // Output goes to ./captures (git-ignored). Chrome: CHROME env, default the Windows install path.
 import { spawn, spawnSync } from "node:child_process";
@@ -96,6 +103,9 @@ async function setViewport(cdp, name) {
   const [width, height] = VIEWPORTS[name];
   await cdp.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: name === "phone" });
 }
+
+const setPhone = (cdp, width, height, deviceScaleFactor = 2) =>
+  cdp.send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor, mobile: true });
 
 async function navigate(cdp, url) {
   const loaded = new Promise((r) => cdp.on("Page.loadEventFired", r));
@@ -273,11 +283,166 @@ async function captureStories() {
   return problems;
 }
 
+/* ------------------------------------------------------------------ mobile nav */
+
+// In-page probes, defined on every call (navigation clears them). Each returns plain data; the
+// assertions live in Node below.
+const PROBES = `
+const visible = (sel) => [...document.querySelectorAll(sel)].find((e) => e.checkVisibility());
+const P = {
+  bar: () => document.querySelector("header:has([data-morph-slot])"),
+  visibleH1s: () => [...document.querySelectorAll("h1")].filter((h) => h.checkVisibility()).map((h) => h.textContent.trim()),
+  title: () => P.bar().querySelector("[data-active]")?.textContent ?? "",
+  current: () => visible('nav[aria-label="Sections"]').querySelector('a[aria-current="true"]')?.getAttribute("aria-label") ?? "",
+  glass: () => +getComputedStyle(P.bar().firstElementChild).opacity,
+  slotOpacity: () => +getComputedStyle(document.querySelector('[data-morph-slot="avatar"]')).opacity,
+  copiesShown: () => [...document.querySelectorAll("[data-morph-copy]")].some((c) => c.checkVisibility()),
+  mastheadPiecesOpacity: () => [...document.querySelectorAll("[data-morph-piece]")].map((e) => +getComputedStyle(e).opacity),
+  // Docked: each flying copy over its bar slot. Worst px gap of left edges, vertical centres, avatar width.
+  dockError: () => {
+    let worst = 0;
+    for (const k of ["avatar", "name", "title"]) {
+      const c = document.querySelector('[data-morph-copy="' + k + '"]');
+      const s = document.querySelector('[data-morph-slot="' + k + '"]');
+      if (!c || !s || !c.checkVisibility()) return null;
+      const a = c.getBoundingClientRect(), b = s.getBoundingClientRect();
+      worst = Math.max(worst, Math.abs(a.left - b.left), Math.abs(a.top + a.height / 2 - (b.top + b.height / 2)), k === "avatar" ? Math.abs(a.width - b.width) : 0);
+    }
+    return Math.round(worst * 100) / 100;
+  },
+  // A tap at the centre of each dock control: does it reach the control? And the dock's extent.
+  dock: () => {
+    const nav = visible('nav[aria-label="Sections"]');
+    const social = document.querySelector('[role="group"][aria-label="Social links"]');
+    return {
+      navRight: Math.round(nav.getBoundingClientRect().right),
+      socialLeft: Math.round(social.getBoundingClientRect().left),
+      socialRight: Math.round(social.getBoundingClientRect().right),
+      width: innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      hits: [...nav.querySelectorAll("a"), ...social.querySelectorAll("a")].map((a) => {
+        const r = a.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return { name: a.getAttribute("aria-label"), href: a.getAttribute("href"), tappable: a.checkVisibility() && !!hit && a.contains(hit) };
+      }),
+    };
+  },
+  landing: (id) => {
+    const target = document.getElementById(id);
+    return { hash: location.hash, scrollY: Math.round(scrollY), barBottom: Math.round(P.bar().getBoundingClientRect().bottom), top: Math.round(target.getBoundingClientRect().top), atBottom: innerHeight + scrollY >= document.documentElement.scrollHeight - 4 };
+  },
+};`;
+
+async function captureMobileNav() {
+  const base = option("base") ?? "http://127.0.0.1:3201";
+  const out = path.join(OUT, "mobile-nav-final");
+  fs.rmSync(out, { recursive: true, force: true });
+  const cdp = await launchChrome();
+  const problems = collectProblems(cdp);
+  const failures = [];
+  const check = (ok, label, detail) => {
+    console.log(`  ${ok ? "pass" : "FAIL"}  ${label}${detail === undefined ? "" : `  ${JSON.stringify(detail)}`}`);
+    if (!ok) failures.push(label);
+  };
+  const probe = (expr) => cdp.evaluate(`(() => { ${PROBES}; return ${expr}; })()`);
+  const tap = async (selector) => {
+    const pt = await cdp.evaluate(`(() => { const r = [...document.querySelectorAll(${JSON.stringify(selector)})].find((e) => e.checkVisibility()).getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
+    for (const type of ["mousePressed", "mouseReleased"]) await cdp.send("Input.dispatchMouseEvent", { type, x: pt.x, y: pt.y, button: "left", clickCount: 1 });
+  };
+  const load = async (url) => {
+    await navigate(cdp, url);
+    await sleep(1500);
+  };
+  const docked = (s, reduced) => s.glass === 1 && (reduced ? s.slot === 1 && s.dockError === null : s.dockError !== null && s.dockError <= 1);
+  const dockState = async () => ({ dockError: await probe("P.dockError()"), glass: await probe("P.glass()"), slot: await probe("P.slotOpacity()") });
+
+  for (const reduced of [false, true]) {
+    const tag = reduced ? "-reduced" : "";
+    await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: reduced ? "reduce" : "no-preference" }] });
+    for (const [w, h] of [[390, 844], [360, 780]]) {
+      console.log(`mobile-nav ${w}x${h}${reduced ? " (reduced motion)" : ""}`);
+      await setPhone(cdp, w, h);
+      await load(`${base}/`);
+      await cdp.evaluate(NO_SMOOTH);
+      const prefix = path.join(out, `${w}${tag}`);
+      await screenshot(cdp, `${prefix}-y000.png`);
+      for (const y of [40, 80, 120, 160, 200]) {
+        await cdp.evaluate(`scrollTo(0, ${y})`);
+        await sleep(500);
+        await screenshot(cdp, `${prefix}-y${String(y).padStart(3, "0")}.png`);
+      }
+      await cdp.evaluate(`document.getElementById("experience").scrollIntoView(); scrollBy(0, 160)`);
+      await sleep(900);
+      await screenshot(cdp, `${prefix}-experience.png`);
+
+      await cdp.evaluate("scrollTo(0, 0)");
+      await sleep(400);
+      const h1s = await probe("P.visibleH1s()");
+      check(h1s.length === 1 && h1s[0] === "Caleb Mills", "one visible h1", h1s);
+      const top = await probe("P.dock()");
+      check(top.navRight <= top.socialLeft && top.socialRight <= top.width && top.scrollWidth === top.width, "dock fits the width", { ...top, hits: undefined });
+      check(top.hits.every((x) => x.tappable), "dock controls visible and tappable at the top", top.hits.filter((x) => !x.tappable).map((x) => x.name));
+      check((await probe("P.title()")) === "" && (await probe("P.glass()")) === 0, "at the top: bar glass clear, no section title", { title: await probe("P.title()"), glass: await probe("P.glass()") });
+      if (reduced) {
+        check(!(await probe("P.copiesShown()")), "reduced motion: no flying copies");
+        check((await probe("P.mastheadPiecesOpacity()")).every((o) => o === 1), "reduced motion: masthead pieces stay visible");
+      }
+
+      // Tabs in page order, with the page's own scroll behaviour (smooth unless reduced motion).
+      await cdp.evaluate(`document.querySelectorAll("style").forEach((s) => { if (s.textContent.includes("scroll-behavior:auto")) s.textContent = "nextjs-portal{display:none!important}"; })`);
+      for (const id of ["skills", "experience", "projects", "contact", "home"]) {
+        const label = id[0].toUpperCase() + id.slice(1);
+        await tap(`a[aria-label="${label}"][href="#${id}"]`);
+        await sleep(1800);
+        const l = await probe(`P.landing("${id}")`);
+        const landed = id === "home" ? l.scrollY === 0 : l.top >= l.barBottom && (l.top <= l.barBottom + 40 || l.atBottom);
+        check(l.hash === `#${id}` && landed, `tab ${label}: hash set, lands below the bar`, l);
+        const follow = { current: await probe("P.current()"), title: await probe("P.title()") };
+        check(follow.current === label && follow.title === (id === "home" ? "" : label), `tab ${label}: aria-current and bar title follow`, follow);
+      }
+      await cdp.evaluate(NO_SMOOTH);
+      await cdp.evaluate("scrollTo(0, document.documentElement.scrollHeight)");
+      await sleep(700);
+      const bottom = await probe("P.dock()");
+      check(bottom.hits.every((x) => x.tappable), "dock controls visible and tappable at the bottom", bottom.hits.filter((x) => !x.tappable).map((x) => x.name));
+      check((await probe("P.title()")) === "Contact", "bar title is Contact at the page bottom", await probe("P.title()"));
+      const footerClear = await cdp.evaluate(`document.querySelector("footer").getBoundingClientRect().bottom <= document.querySelector('[role="group"][aria-label="Social links"]').getBoundingClientRect().top`);
+      check(footerClear, "footer clears the dock at the page bottom");
+      await screenshot(cdp, `${prefix}-bottom.png`);
+      if (!reduced && w === 390) console.log(`    dock links: ${bottom.hits.map((x) => `${x.name} -> ${x.href}`).join(" | ")}`);
+
+      await load(`${base}/#experience`);
+      const reload = { scrollY: await cdp.evaluate("Math.round(scrollY)"), title: await probe("P.title()"), ...(await dockState()) };
+      check(reload.scrollY > 0 && reload.title === "Experience" && docked(reload, reduced), "reload at #experience lands docked", reload);
+      await screenshot(cdp, `${prefix}-reload-experience.png`);
+    }
+  }
+
+  // The brief's resize: 390 -> 360 mid-page, motion on and off.
+  for (const reduced of [false, true]) {
+    await cdp.send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: reduced ? "reduce" : "no-preference" }] });
+    await setPhone(cdp, 390, 844);
+    await load(`${base}/`);
+    await cdp.evaluate(NO_SMOOTH);
+    await cdp.evaluate("scrollTo(0, 1500)");
+    await sleep(500);
+    await setPhone(cdp, 360, 780);
+    await sleep(800);
+    const s = await dockState();
+    check(docked(s, reduced), `390 -> 360 resize mid-page stays docked${reduced ? " (reduced motion)" : ""}`, s);
+    await screenshot(cdp, path.join(out, `resize-390-to-360${reduced ? "-reduced" : ""}.png`));
+  }
+
+  cdp.close();
+  problems.push(...failures.map((f) => `check failed: ${f}`));
+  return problems;
+}
+
 /* ------------------------------------------------------------------ main */
 
-const run = { page: capturePage, stories: captureStories }[mode];
+const run = { page: capturePage, stories: captureStories, "mobile-nav": captureMobileNav }[mode];
 if (!run) {
-  console.error("usage: node scripts/capture.mjs page|stories [options] (see the header of this file)");
+  console.error("usage: node scripts/capture.mjs page|stories|mobile-nav [options] (see the header of this file)");
   process.exit(2);
 }
 const problems = await run();
