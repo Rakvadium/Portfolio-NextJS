@@ -1,7 +1,4 @@
 "use client";
-// Below lg: the phone navigation. One useActiveSection listener feeds both the top bar's section
-// title and the dock's active tab. The dock's right capsule (SocialDock) arrives as server-rendered
-// children. lg+ uses components/top-bar instead.
 import { useMemo, type ReactNode } from "react";
 import type { SectionView } from "@/app/data/site";
 import { mapNonEmpty } from "@/lib/non-empty";
@@ -16,7 +13,6 @@ export function MobileNavigation({
   children,
 }: Omit<MobileTopBarProps, "active" | "sections"> & {
   sections: readonly [SectionView, ...SectionView[]];
-  /** The dock's right-hand capsule (SocialDock). */
   children: ReactNode;
 }) {
   const ids = useMemo(() => mapNonEmpty(sections, (s) => s.id), [sections]);

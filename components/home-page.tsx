@@ -1,4 +1,3 @@
-// The page composition: section order comes from `site.sections`, bodies from an exhaustive record.
 import type { ReactNode } from "react";
 import type { SectionId } from "@/app/data/portfolio";
 import type { Site } from "@/app/data/site";
@@ -15,7 +14,6 @@ import { Contact } from "./contact";
 import { SiteFooter } from "./site-footer";
 
 export function HomePage({ site }: { site: Site }) {
-  // An id in `sections` without a body here fails tsc (missing key), and a stray key fails too.
   const bodies = {
     home: <Hero hero={site.hero} />,
     skills: <Skills skills={site.skills} />,
@@ -31,7 +29,6 @@ export function HomePage({ site }: { site: Site }) {
       <MobileNavigation brand={site.brand} portrait={site.hero.portrait} sections={site.sections}>
         <SocialDock channels={site.social} />
       </MobileNavigation>
-      {/* pb-36 also keeps the footer clear of the phone dock. */}
       <main className="relative z-10 mx-auto max-w-[1200px] px-4 pb-36 sm:px-6">
         {site.sections.map((section, index) => (
           <Section key={section.id} section={section} lead={index === 0}>

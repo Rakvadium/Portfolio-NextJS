@@ -1,6 +1,3 @@
-// The home section body. Below lg: the masthead (identity + h1) above the intro card. From lg: a
-// 12-col grid of the intro card, which then carries the h1, and the portrait tile. The server HTML
-// is the at-top pose; the scroll-linked pieces are the HeroName and HeroPortrait islands.
 import { Mail } from "lucide-react";
 import type { HeroView } from "@/app/data/site";
 import { ButtonLink } from "@/components/ui/button-link";

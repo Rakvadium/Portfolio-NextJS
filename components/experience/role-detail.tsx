@@ -1,13 +1,6 @@
-// Role markup shared by the explorer and the accordion, so the two layouts cannot drift.
-// Server components: both client islands receive these as rendered slots.
 import type { RoleView } from "@/app/data/site";
 import { cn } from "@/lib/utils";
 
-/**
- * Years / title / company: the explorer tab label and the accordion summary. Active styling comes
- * from the parent's ARIA state through group variants (aria-selected on a tab, aria-expanded on the
- * accordion button), not from props, so the node can be rendered once on the server.
- */
 export function RoleSummary({ role, variant }: { role: RoleView; variant: "tab" | "summary" }) {
   return (
     <span className="relative block min-w-0">

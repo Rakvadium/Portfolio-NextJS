@@ -2,11 +2,6 @@
 import { useEffect, useState } from "react";
 import { pickActiveSection, type SectionBox } from "./active-section";
 
-/**
- * The current section id. Starts at ids[0] on server and client alike (no hydration mismatch); the
- * first effect run corrects it (e.g. after a deep link to #projects). rAF-throttled scroll + resize
- * listeners. Ids missing from the document are skipped.
- */
 export function useActiveSection<Id extends string>(ids: readonly [Id, ...Id[]]): Id {
   const [active, setActive] = useState<Id>(ids[0]);
 

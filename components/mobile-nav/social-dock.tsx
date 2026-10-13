@@ -1,5 +1,3 @@
-// Phone dock, right capsule: the outbound channels as round icon links, then a divider and Email
-// (amber, the primary action).
 import type { Channel } from "@/app/data/site";
 import { channelIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";

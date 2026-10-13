@@ -1,5 +1,3 @@
-// One project: a 16:10 screenshot link and the text column (kind, title, what it is, what I built,
-// built with, links). `flip` swaps the columns at lg; DOM order stays image-then-text.
 import Image from "next/image";
 import { Github } from "lucide-react";
 import type { ProjectView } from "@/app/data/site";

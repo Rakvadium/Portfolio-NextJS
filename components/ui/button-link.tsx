@@ -1,15 +1,12 @@
-// Every pill CTA on the page: hero (View work / Email me / Experience), projects (Visit host /
-// Source code), contact (Email me). One component, three tones.
 import type { ReactNode } from "react";
 import { ArrowDown, ArrowRight, ArrowUpRight, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type ButtonTone =
-  | "brand" // gradient fill, charcoal text, hover scale
-  | "ghost" // glass outline
-  | "quiet"; // text link, underline on hover
+  | "brand"
+  | "ghost"
+  | "quiet";
 
-/** Trailing arrows nudge on hover in their own direction. */
 export type TrailingArrow = "down" | "right" | "up-right";
 
 export type ButtonLinkProps = {

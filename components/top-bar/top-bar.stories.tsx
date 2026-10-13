@@ -10,7 +10,6 @@ const meta = {
   component: TopBar,
   args: { brand: site.brand, sections: site.sections, social: site.social },
   decorators: [withScrollStage()],
-  // Fixed position: each story gets its own iframe, never an inline docs block.
   tags: ["!autodocs"],
   parameters: { layout: "fullscreen", docs: { story: { inline: false, iframeHeight: 640 } } },
 } satisfies Meta<typeof TopBar>;

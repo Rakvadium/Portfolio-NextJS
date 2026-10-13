@@ -1,10 +1,5 @@
 "use client";
-// Below-lg role accordion: one role open at a time, the newest open first. Layout and behavior only:
-// the summary and body are server-rendered slots (experience.tsx).
-//
-// framer's height collapse (not native <details name> + interpolate-size, which only Chromium
-// animates). Under reduced motion the toggle is instant: the preference is read in the click handler,
-// never during render, so server and client render the same markup.
+// framer height collapse, not native <details name> + interpolate-size: only Chromium animates that.
 import { useId, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";

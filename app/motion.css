@@ -1,23 +1,4 @@
-/* Motion on the page uses two mechanisms with disjoint jobs. Do not use both for one job.
- *
- * 1. Scroll-position-linked values: framer-motion (useScroll + useTransform) in small client islands.
- *    The hero name -> top-bar handoff (components/hero/scroll-motion.tsx, components/top-bar/scroll-motion.tsx),
- *    the portrait parallax, and the progress line. Framer works in every evergreen browser, which CSS
- *    scroll timelines do not (Firefox). Their motion values start at the at-top pose on server and client,
- *    so hydration matches. Transforms carry `motion-static`, which the rule below cancels for
- *    reduced-motion users; opacity (the handoff fade) and the progress line still run for them.
- *    No component reads the media query in JS.
- *    The phone masthead -> top bar morph (components/mobile-nav) is this mechanism too, written as plain
- *    motion values from a pure per-frame function (morph.ts) instead of useTransform ranges.
- *
- * 2. Entrances on load and reveals as a tile scrolls into view: CSS, in this file.
- *    The server HTML is the final, visible pose. Animations only move *from* an offset *to* that pose,
- *    and every one sits inside `prefers-reduced-motion: no-preference`. Reveals also sit inside
- *    `@supports (animation-timeline: view())`; browsers without it get static, visible content.
- *
- * Shared-layout springs (nav underline, phone tab pill, role pill), the role panel crossfade, and the
- * accordion height are framer too, inside <MotionConfig reducedMotion="user">.
- */
+/* Scroll-linked motion is framer, not CSS scroll timelines: Firefox does not support them. */
 
 @media (prefers-reduced-motion: reduce) {
   .motion-static {
@@ -25,11 +6,6 @@
   }
 }
 
-/* The phone masthead -> top bar morph (components/mobile-nav). While the bar has measured the masthead
-   it draws copies of the avatar, name and title that fly into the bar, so the masthead's own pieces go
-   transparent (they keep their layout and stay in the accessibility tree). Under reduced motion the
-   copies are display:none: the masthead pieces stay put and fade out (--masthead-opacity, written per
-   scroll frame) while the bar's identity fades in. */
 @media (prefers-reduced-motion: no-preference) {
   [data-masthead][data-morphing] [data-morph-piece] {
     opacity: 0;

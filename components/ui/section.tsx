@@ -1,13 +1,6 @@
-// The <section> shell every page section sits in, and the heading block.
 import type { ReactNode } from "react";
 import type { SectionView } from "@/app/data/site";
 
-/**
- * <section id={section.id}>. The lead section (Home) sits closer to the top bar (60px below lg, where
- * the phone bar is transparent over the masthead). No scroll-mt:
- * html scroll-padding-top handles the fixed bar. When `section.heading` is set it renders the
- * SectionHeading first and points aria-labelledby at it, so the id convention lives here only.
- */
 export function Section({ section, lead, children }: { section: SectionView; lead: boolean; children: ReactNode }) {
   const headingId = section.heading ? `${section.id}-heading` : undefined;
   return (

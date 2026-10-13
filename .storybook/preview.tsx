@@ -7,7 +7,6 @@ const preview: Preview = {
   tags: ["autodocs"],
   parameters: {
     layout: "padded",
-    // html { background: var(--color-canvas) } from globals.css paints the canvas; swatches would fight it.
     backgrounds: { disable: true },
     viewport: {
       options: {
@@ -16,7 +15,6 @@ const preview: Preview = {
         phoneSmall: { name: "Small phone 360x780", styles: { width: "360px", height: "780px" }, type: "mobile" },
       },
     },
-    // a11y violations fail the story test (npm run test-storybook) and show as errors in the panel.
     a11y: { test: "error" },
   },
   initialGlobals: { viewport: { value: "desktop", isRotated: false } },

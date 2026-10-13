@@ -1,4 +1,3 @@
-// Gradient monogram + the name/title that fades in as the hero h1 scrolls away.
 import type { Brand } from "@/app/data/site";
 import { BrandReveal } from "./scroll-motion";
 

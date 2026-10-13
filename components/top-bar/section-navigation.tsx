@@ -1,9 +1,4 @@
 "use client";
-// lg+: the section navigation island. <nav aria-label="Sections"> with aria-current and a spring
-// underline under the active link. Below lg the phone dock's tabs (components/mobile-nav) do this job.
-//
-// Links are plain <a href="#id">: the browser scrolls (smooth unless reduced motion, offset by
-// scroll-padding-top) and the URL hash updates.
 import { useId, useMemo } from "react";
 import { LayoutGroup, MotionConfig, motion } from "framer-motion";
 import type { SectionView } from "@/app/data/site";

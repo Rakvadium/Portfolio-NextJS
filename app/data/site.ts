@@ -1,6 +1,3 @@
-// The view model. One pure function turns authored Content into exactly what components render.
-// Components receive slices of `Site` as props and never format dates, count things, strip
-// protocols, or compose sentences. Every derived string in the UI is born here, once.
 import {
   content as authored,
   sections,
@@ -25,13 +22,6 @@ import {
 } from "./format.ts";
 import { mapNonEmpty } from "../../lib/non-empty.ts";
 
-/* ------------------------------------------------------------- view types */
-
-/**
- * One entry per `sections` item, in page order. Drives the top-bar nav, the phone tab dock, and the
- * page's <section> shells. `heading` is set for sections that open with a SectionHeading
- * (Skills, Experience, Projects); Home has the h1 and Contact has its own "Get in touch" heading.
- */
 export type SectionView = {
   readonly id: SectionId;
   readonly label: string;
@@ -39,18 +29,13 @@ export type SectionView = {
   readonly heading?: { readonly title: string; readonly intro: string };
 };
 
-/** Every way to reach Caleb. Top-bar icons and contact rows are both filtered from this one list. */
 export type ChannelKind = "email" | "linkedin" | "github" | "phone";
 export type Channel = {
   readonly kind: ChannelKind;
-  /** Row label: "Email", "LinkedIn". */
   readonly label: string;
-  /** Icon-button accessible name: "GitHub", "Email caleb.mills.1221@proton.me". */
   readonly accessibleName: string;
-  /** What the contact row shows: "caleb.mills.1221@proton.me", "linkedin.com/in/calebmills1". */
   readonly display: string;
   readonly href: string;
-  /** http(s) links open in a new tab with rel=noopener. */
   readonly external: boolean;
 };
 
@@ -65,7 +50,6 @@ export type HeroView = {
   readonly headline: string;
   readonly location: string;
   readonly portrait: Image;
-  /** The "Email me" CTA. */
   readonly email: Channel;
   readonly facts: readonly Fact[];
   readonly coreStack: readonly string[];
@@ -77,22 +61,17 @@ export type SkillsView = {
 };
 
 export type RoleView = {
-  /** Stable key and DOM id stem: "kensiemae-senior-full-stack-engineer". */
   readonly id: string;
   readonly title: string;
-  /** legalName ?? name */
   readonly company: string;
   readonly location: string;
-  /** "2023 – 2026" */
   readonly years: string;
-  /** "Aug 2023 – Oct 2026" */
   readonly dates: string;
   readonly highlights: Role["highlights"];
 };
 
 export type ProjectView = Omit<Project, "url" | "repoUrl"> & {
   readonly url: string;
-  /** "genhealthaz.com", for "Visit genhealthaz.com". */
   readonly host: string;
   readonly repoUrl?: string;
 };
@@ -105,7 +84,6 @@ export type Site = {
   readonly meta: { readonly title: string; readonly description: string };
   readonly sections: readonly [SectionView, ...SectionView[]];
   readonly brand: Brand;
-  /** Top-bar icon buttons, in display order: GitHub, LinkedIn, Email. */
   readonly social: readonly Channel[];
   readonly hero: HeroView;
   readonly skills: SkillsView;
@@ -114,8 +92,6 @@ export type Site = {
   readonly contact: ContactView;
   readonly footer: FooterView;
 };
-
-/* ------------------------------------------------------------- derivation */
 
 const compareYearMonth = (a: YearMonth, b: YearMonth) => a.year - b.year || a.month - b.month;
 
@@ -137,14 +113,6 @@ function plural(n: number, one: string, many: string): string {
   return `${capitalize(numberWord(n))} ${n === 1 ? one : many}`;
 }
 
-/**
- * Pure. Same input -> same Site. `today` is the only clock input; it resolves "present" periods
- * and the copyright year. app/page.tsx is a server component, so this runs at build/render time
- * on the server only, and the client never recomputes it: no year-boundary hydration mismatch.
- *
- * Throws when an invariant breaks (roles newest first, an engineering role exists, unique project
- * slugs), so a bad content edit fails `next build` and the Storybook build loudly.
- */
 export function buildSite(c: Content, today: YearMonth): Site {
   assertInvariants(c);
   const { profile } = c;
@@ -255,5 +223,4 @@ function todayYearMonth(): YearMonth {
   return { year: d.getFullYear(), month: (d.getMonth() + 1) as YearMonth["month"] };
 }
 
-/** The site as authored. Imported by app/page.tsx, app/layout.tsx (metadata), and stories. */
 export const site: Site = buildSite(authored, todayYearMonth());

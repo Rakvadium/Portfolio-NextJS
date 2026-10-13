@@ -6,7 +6,6 @@ import { fixtures } from "@/app/data/fixtures";
 import { Section } from "@/components/ui/section";
 import { Projects } from "./projects";
 
-/** Wraps the story in the real #projects section, so the derived intro shows with it. */
 function inProjectsSection(from: Site): Decorator {
   return function InProjectsSection(Story) {
     return (

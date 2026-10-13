@@ -1,4 +1,3 @@
-// `copyright` already carries the year, computed on the server: no client clock.
 import type { FooterView } from "@/app/data/site";
 
 export function SiteFooter({ footer }: { footer: FooterView }) {

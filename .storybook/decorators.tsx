@@ -1,13 +1,8 @@
-// Story decorators: the only Storybook-specific rendering code. Components contain none.
 import type { ReactNode } from "react";
 import type { Decorator } from "@storybook/nextjs-vite";
 import { fontVariables } from "../app/fonts";
 import { site } from "../app/data/site";
 
-/**
- * Every story (global, in preview.tsx): the next/font CSS variables on a root that also sets font-sans,
- * the canvas background, and ink color, which is what <html>/<body> get in app/layout.tsx.
- */
 export const withSiteRoot: Decorator = (Story) => (
   <div className={`${fontVariables} bg-canvas font-sans text-ink antialiased`}>
     <Story />

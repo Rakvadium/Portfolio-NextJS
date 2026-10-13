@@ -1,6 +1,3 @@
-// Section body for #experience. Renders both layouts and CSS picks one: the two-pane explorer at lg+,
-// the accordion below. display:none takes the other out of the accessibility tree.
-// All role markup is rendered here, on the server, and handed to the client islands as slots.
 import type { Site } from "@/app/data/site";
 import { mapNonEmpty } from "@/lib/non-empty";
 import { RoleAccordion } from "./role-accordion";

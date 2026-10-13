@@ -1,9 +1,4 @@
 "use client";
-// Desktop two-pane explorer: a vertical tablist and the selected role's panel. Layout and behavior
-// only: the tab and panel content are server-rendered slots (experience.tsx), so this imports no data.
-//
-// Selection starts at 0 on server and client, so SSR shows the newest role and hydration matches.
-// Only the selected panel is in the DOM; the accordion (lg:hidden) carries every role for small screens.
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -11,7 +6,6 @@ import type { NonEmpty } from "@/lib/non-empty";
 import { Tile } from "@/components/ui/tile";
 
 export type ExplorerItem = {
-  /** Stable key; also the DOM id stem for the tab. */
   readonly id: string;
   readonly tab: ReactNode;
   readonly panel: ReactNode;

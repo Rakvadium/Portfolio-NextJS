@@ -1,4 +1,3 @@
-// 36px round icon links, visible at every breakpoint.
 import type { Channel } from "@/app/data/site";
 import { channelIcon } from "@/components/ui/icons";
 

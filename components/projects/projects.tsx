@@ -1,4 +1,3 @@
-// Section body for #projects: cards stacked, alternating the image side.
 import type { ProjectView } from "@/app/data/site";
 import { ProjectCard } from "./project-card";
 

@@ -1,4 +1,3 @@
-// Section body for #contact: "Get in touch", the blurb, an Email me CTA, and one row per channel.
 import { ArrowUpRight, Mail } from "lucide-react";
 import type { ContactView } from "@/app/data/site";
 import { ButtonLink } from "@/components/ui/button-link";

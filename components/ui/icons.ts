@@ -1,4 +1,3 @@
-// Icons keyed by meaning, so a new channel, fact kind or section without an icon fails tsc.
 import {
   Briefcase,
   BriefcaseBusiness,
@@ -30,7 +29,6 @@ export const factIcon = {
   recentRole: Building2,
 } as const satisfies Record<FactKind, LucideIcon>;
 
-/** The phone tab bar is icon-only; each tab's accessible name is the section label. */
 export const sectionIcon = {
   home: House,
   skills: Sparkles,

@@ -1,4 +1,3 @@
-// The phone dock's round glass capsule: a 1px brand hairline ring around a blurred canvas body.
 import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/utils";
 

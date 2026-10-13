@@ -1,7 +1,4 @@
 "use client";
-// Phone dock, left capsule: one icon-only tab per section (the label is its accessible name), with
-// a tinted coral pill that springs to the active tab. Plain hash links: the browser scrolls (smooth
-// unless reduced motion), lands under the bar via scroll-padding-top, and updates the URL hash.
 import { useId } from "react";
 import { LayoutGroup, MotionConfig, motion } from "framer-motion";
 import type { SectionView } from "@/app/data/site";

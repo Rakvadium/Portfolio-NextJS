@@ -1,6 +1,3 @@
-// The phone identity in its two sizes: the masthead above the intro card and the docked top bar.
-// The masthead morph (components/mobile-nav) scales one into the other, so both sizes, and the
-// masthead-sized copies it flies into the bar, read their look from here.
 import type { ComponentPropsWithoutRef } from "react";
 import Image from "next/image";
 import type { Image as ImageData } from "@/app/data/portfolio";
@@ -22,10 +19,6 @@ const avatarSize = {
   bar: { ring: "h-8 w-8 rounded-[10px] p-px", inner: "rounded-[9px]" },
 } as const;
 
-/**
- * The portrait inside the diagonal brand ring. Spans (display: block), so it can sit inside a link.
- * Every size requests the 80px rendition, so the masthead, its flying copy, and the bar share one file.
- */
 export function Avatar({
   portrait,
   size,
@@ -36,7 +29,6 @@ export function Avatar({
 }: Omit<ComponentPropsWithoutRef<"span">, "children"> & {
   portrait: ImageData;
   size: keyof typeof avatarSize;
-  /** Empty (decorative) unless this copy is the one assistive tech should read. */
   alt?: string;
   glow?: boolean;
 }) {

@@ -5,7 +5,7 @@ import { pickActiveSection } from "./active-section.ts";
 const boxes = [
   { id: "home", top: -900 },
   { id: "skills", top: -200 },
-  { id: "experience", top: 250 }, // 250 <= 0.35 * 800 = 280: above the line
+  { id: "experience", top: 250 },
   { id: "projects", top: 1400 },
   { id: "contact", top: 2600 },
 ];

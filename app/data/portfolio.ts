@@ -1,15 +1,9 @@
-// Authored content. The only file a content edit touches.
-// Everything a component shows is either written here or derived from it in ./site.ts.
-// No formatting, no display strings that restate another field, no counts.
 
-/* ------------------------------------------------------------------ types */
 
 export type Month = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 export type YearMonth = { readonly year: number; readonly month: Month };
-/** `end: "present"` for a role still held. Display strings are derived (format.ts), never stored. */
 export type Period = { readonly start: YearMonth; readonly end: YearMonth | "present" };
 
-/** A path served from /public. next/image and Storybook staticDirs both resolve it. */
 export type PublicPath = `/${string}`;
 export type HttpsUrl = `https://${string}`;
 export type Image = { readonly src: PublicPath; readonly alt: string };
@@ -18,11 +12,9 @@ export type Profile = {
   readonly name: string;
   readonly title: string;
   readonly location: string;
-  /** Hero lead paragraph. */
   readonly headline: string;
   readonly portrait: Image;
   readonly email: string;
-  /** `tel` is E.164 so the link dials from anywhere; `display` is what people read. */
   readonly phone: { readonly display: string; readonly tel: `+${string}` };
   readonly github: `https://github.com/${string}`;
   readonly linkedin: `https://www.linkedin.com/in/${string}`;
@@ -30,9 +22,7 @@ export type Profile = {
 };
 
 export type Company = {
-  /** Short name for running prose ("Senior Full-Stack Engineer at KensieMae"). */
   readonly name: string;
-  /** Formal name for the experience list. Defaults to `name`. */
   readonly legalName?: string;
 };
 
@@ -41,44 +31,29 @@ export type Role = {
   readonly company: Company;
   readonly location: string;
   readonly period: Period;
-  /** Counts toward the derived "N+ years as a software engineer" fact. */
   readonly engineering: boolean;
-  /** Non-empty: a role with nothing to say does not ship. */
   readonly highlights: readonly [string, ...string[]];
 };
 
 export type SkillGroup = {
   readonly id: string;
   readonly title: string;
-  /** The short "what for" note shown beside the group title. */
   readonly note: string;
   readonly skills: readonly [string, ...string[]];
 };
 
 export type Project = {
-  /** Stable id for React keys. */
   readonly slug: string;
   readonly title: string;
-  /** One-line label above the title ("Clinic website rebuild"). */
   readonly kind: string;
-  /** "What it is". */
   readonly summary: string;
-  /** "What I built". */
   readonly contribution: string;
   readonly technologies: readonly [string, ...string[]];
   readonly screenshot: Image;
   readonly url: HttpsUrl;
-  /** Present only for open-source projects. */
   readonly repoUrl?: `https://github.com/${string}`;
 };
 
-/* --------------------------------------------------------------- sections */
-
-/**
- * Single source of truth for page order, nav labels, and section ids.
- * `SectionId` is derived from it; components/home-page.tsx maps every id to a body with
- * `satisfies Record<SectionId, ...>`, so a nav entry without a section (or the reverse) fails tsc.
- */
 export const sections = [
   { id: "home", label: "Home" },
   { id: "skills", label: "Skills" },
@@ -88,8 +63,6 @@ export const sections = [
 ] as const satisfies readonly { readonly id: string; readonly label: string }[];
 
 export type SectionId = (typeof sections)[number]["id"];
-
-/* ---------------------------------------------------------------- content */
 
 export const profile = {
   name: "Caleb Mills",
@@ -108,7 +81,6 @@ export const profile = {
 const kensieMae: Company = { name: "KensieMae", legalName: "KensieMae, LLC" };
 const velma: Company = { name: "Velma.com" };
 
-/** Newest first. site.ts relies on this order for "most recent role"; it asserts it at module load. */
 export const roles = [
   {
     title: "Senior Full-Stack Engineer",
@@ -153,7 +125,6 @@ export const roles = [
     company: velma,
     location: "Nampa, Idaho",
     period: { start: { year: 2015, month: 7 }, end: { year: 2017, month: 8 } },
-    // Not counted: "9+ years as a software engineer" starts at the Aug 2017 engineering role.
     engineering: false,
     highlights: [
       "Built and tested automated marketing campaigns and wrote custom JavaScript for dynamic email and print templates, then moved into an engineering role.",
@@ -174,10 +145,8 @@ export const skillGroups = [
 
 export type SkillName = (typeof skillGroups)[number]["skills"][number];
 
-/** Hero "Core stack" chips and the Skills intro sentence. Typed against declared skills: a typo fails tsc. */
 export const coreStack = ["React", "TypeScript", "Next.js", "Node.js"] as const satisfies readonly SkillName[];
 
-/** Skills section closing line. */
 export const skillsFootnote = "I use AI coding agents every day, and I spend a lot of time validating what they build.";
 
 export const projects = [
@@ -206,7 +175,6 @@ export const projects = [
   },
 ] as const satisfies readonly Project[];
 
-/** The whole authored record, for buildSite() and for Storybook fixtures that vary one field. */
 export type Content = {
   readonly profile: Profile;
   readonly roles: readonly [Role, ...Role[]];

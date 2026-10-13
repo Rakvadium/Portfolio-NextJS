@@ -1,11 +1,8 @@
 "use client";
-// The glass tile. A client component only for the pointer handler; children stay server-rendered
-// (passed through as props). Chrome and glow live in globals.css `.tile`; entrance/reveal in motion.css.
 import type { ComponentPropsWithoutRef, PointerEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type Glow = "amber" | "coral" | "magenta";
-/** Which motion.css class the tile carries. "none" for tiles inside something that already moves. */
 export type TileMotion = "none" | "enter" | "enter-fade" | "reveal";
 
 export type TileProps = {
@@ -26,7 +23,6 @@ const motionClass: Record<TileMotion, string | undefined> = {
   reveal: "motion-reveal",
 };
 
-/** Writes --x/--y on the tile; `.tile::before/::after` read them. */
 function trackPointer(e: PointerEvent<HTMLElement>) {
   const el = e.currentTarget;
   const r = el.getBoundingClientRect();

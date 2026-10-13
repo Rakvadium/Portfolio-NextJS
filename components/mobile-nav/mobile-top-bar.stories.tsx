@@ -15,7 +15,6 @@ const meta = {
   args: { brand: site.brand, portrait: site.hero.portrait, sections: site.sections, active: "home" },
   globals: { viewport: { value: "phone", isRotated: false } },
   decorators: [withScrollStage({ home: <Masthead hero={site.hero} /> })],
-  // Fixed position: each story gets its own iframe, never an inline docs block.
   tags: ["!autodocs"],
   parameters: { layout: "fullscreen", docs: { story: { inline: false, iframeHeight: 844 } } },
 } satisfies Meta<typeof MobileTopBar>;
@@ -59,7 +58,6 @@ export const Docked: Story = {
     scrollTo(canvasElement, 600);
     await waitFor(() => expect(glass(canvasElement)).toBe("1"));
     const doc = canvasElement.ownerDocument;
-    // The flying avatar copy sits exactly on the bar's 32px slot.
     const copy = doc.querySelector('[data-morph-copy="avatar"]')!.getBoundingClientRect();
     const slot = doc.querySelector('[data-morph-slot="avatar"]')!.getBoundingClientRect();
     await expect(Math.round(copy.width)).toBe(32);

@@ -1,5 +1,3 @@
-// The fixed decorative layer behind the page: three blurred brand-color blobs and a dot grid that
-// fades out from the top.
 export function Backdrop() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">

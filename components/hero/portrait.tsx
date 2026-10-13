@@ -1,6 +1,3 @@
-// The large lg+ portrait tile: next/image fill (the desktop LCP candidate, so `priority`), a bottom fade
-// to canvas, and the name / location caption. It is display:none below lg and `priority` still preloads
-// it there: one extra preload on phones, in exchange for no client media query.
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import type { Image as ImageData } from "@/app/data/portfolio";

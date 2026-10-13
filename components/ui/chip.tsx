@@ -1,4 +1,3 @@
-// Pill label for skills, core stack, and project technologies.
 import type { ReactNode } from "react";
 
 export function Chip({ children }: { children: ReactNode }) {

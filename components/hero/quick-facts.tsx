@@ -1,4 +1,3 @@
-// "Quick facts": one row per Fact and the core-stack chips. Facts arrive fully formatted from site.ts.
 import type { ReactNode } from "react";
 import { Layers, type LucideIcon } from "lucide-react";
 import type { Fact } from "@/app/data/site";
@@ -30,7 +29,6 @@ export function QuickFacts({ facts, coreStack }: { facts: readonly Fact[]; coreS
   );
 }
 
-/** dl > div > dt + dd, as HTML requires; the icon sits in the dt's left gutter. */
 function FactRow({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
     <div className="relative min-w-0 pl-11">
