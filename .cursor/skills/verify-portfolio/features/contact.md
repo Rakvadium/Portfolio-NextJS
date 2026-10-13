@@ -12,7 +12,7 @@ Contact is a "Get in touch" tile: a sentence about who Caleb is and where, an Em
 ## How to get to it (user POV)
 
 - Choose `Contact` in the desktop navigation.
-- Choose `Contact` in the mobile section menu.
+- Choose the `Contact` tab in the mobile dock.
 - Open `http://127.0.0.1:<port>/#contact` directly.
 - Scroll to the end of the page.
 
@@ -32,8 +32,8 @@ Preconditions:
 
 ## Gotchas
 
-- `Email caleb.mills.1221@proton.me` names the top-bar icon (nth 1) and the contact row (nth 2). `Email me` names the hero button (nth 1) and the contact button (nth 2).
-- The top-bar icons are named `GitHub` and `LinkedIn`; the contact rows include the display address in their names.
+- `Email caleb.mills.1221@proton.me` names the top-bar icon, or the mobile dock icon below 1024px (nth 1), and the contact row (nth 2). `Email me` names the hero button (nth 1) and the contact button (nth 2).
+- The top-bar icons (the mobile dock icons below 1024px) are named `GitHub` and `LinkedIn`; the contact rows include the display address in their names.
 - At 1280px the email and LinkedIn rows truncate their display text with an ellipsis. The accessible name and `href` are complete.
 - There is no Contact Me button and no confetti. Do not use `browser canvases` as proof.
 - Clicking a `mailto:` link in a browser with a mail handler leaves the page; run `browser open` before the next feature.

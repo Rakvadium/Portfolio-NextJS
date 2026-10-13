@@ -40,7 +40,7 @@ Preconditions:
 
 ## Gotchas
 
-- The desktop bar is exposed at 1024px and wider. Below that it is `display: none` and the mobile menu feature applies.
+- The desktop bar is exposed at 1024px and wider. Below that it is `display: none` and the mobile navigation feature applies.
 - On desktop `Experience` matches the bar (nth 1) and the hero (nth 2). `Home`, `Skills`, `Projects`, `Contact`, and `View work` are unique.
 - Links scroll smoothly unless the browser prefers reduced motion. Wait for the target heading before reading the active link.
 - Tiles below the hero fade up as they scroll into view, in browsers that support scroll-driven animations. Wait for `visible: true` before a screenshot.

@@ -47,7 +47,7 @@ Keep implementation details out of the map. Name only visitor paths, stable hand
 
 - [Home](./home.md) covers the hero identity, quick facts, portrait, primary calls to action, and the name handoff to the top bar.
 - [Section navigation](./section-navigation.md) covers the desktop bar (1024px and wider), its active-section underline, the hero calls to action, and the Skills section.
-- [Mobile menu](./mobile-menu.md) covers the section dropdown below 1024px: opening it, following a section link, and dismissing it.
+- [Mobile navigation](./mobile-navigation.md) covers the phone layout below 1024px: the bottom section tabs, the social dock, and the top bar that the masthead moves into.
 - [Experience](./experience.md) covers the desktop role explorer and the phone accordion.
 - [Projects](./projects.md) covers both project cards, their live-site links, and the UVSDECKS.GG source link.
-- [Contact](./contact.md) covers the email, phone, LinkedIn, and GitHub links and the always-visible top-bar icons.
+- [Contact](./contact.md) covers the email, phone, LinkedIn, and GitHub links and the always-visible social icons.

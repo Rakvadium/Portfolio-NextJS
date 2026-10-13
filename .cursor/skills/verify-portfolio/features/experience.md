@@ -11,7 +11,7 @@ Experience lists four roles, newest first. At 1024px and wider it is a two-pane 
 
 ## How to get to it (user POV)
 
-- Choose `Experience` in the desktop bar or the mobile section menu.
+- Choose `Experience` in the desktop bar or the mobile dock.
 - Choose `Experience` on the hero.
 - Open `http://127.0.0.1:<port>/#experience` directly.
 

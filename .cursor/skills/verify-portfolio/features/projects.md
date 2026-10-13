@@ -15,7 +15,7 @@ Projects shows two cards, GenHealthAZ and UVSDECKS.GG. Each card has a screensho
 
 - Choose `Projects` in the desktop navigation.
 - Choose `View work` on the home hero.
-- Choose `Projects` in the mobile section menu.
+- Choose the `Projects` tab in the mobile dock.
 - Open `http://127.0.0.1:<port>/#projects` directly.
 
 ## Driving it with control-portfolio
@@ -36,7 +36,7 @@ Preconditions:
 
 ## Gotchas
 
-- The mobile `Projects` path is a separate entry. Drive it from the mobile menu feature.
+- The mobile `Projects` tab is a separate entry. Drive it from the mobile navigation feature.
 - GenHealthAZ has no source link. A second `Source code` link means the page changed.
 - Technology chips read `Next.js` and `Convex`, matching the skills section's spelling.
 - Cards fade up as they scroll into view. Wait for `UVSDECKS.GG` as well as the section heading before a screenshot.

@@ -1,20 +1,20 @@
 # Home
 
-Home is the first screen. It introduces Caleb Mills with his title, a one-paragraph headline, a Quick facts list with his core stack, a portrait, and three calls to action.
+Home is the first screen. It introduces Caleb Mills with his title, a one-paragraph headline, a Quick facts list with his core stack, a portrait, and three calls to action. Below 1024px the portrait, name, and title form a masthead above the intro card, and the card opens with an "About me" label.
 
 ## Sub-features
 
 - `home-identity` shows the name heading and the title.
 - `home-facts` shows Quick facts: years as a software engineer, location, most recent role, and the core-stack chips.
-- `home-portrait` shows the portrait: a large tile at 1024px and wider, a small thumbnail next to the name below that.
+- `home-portrait` shows the portrait: a large tile at 1024px and wider, the ringed masthead portrait above the intro card below that.
 - `home-actions` offers View work (to projects), Email me (mailto), and Experience (to experience).
-- `home-handoff` shrinks and fades the name heading as the page scrolls, while the top-bar name fades in.
+- `home-handoff` hands the name to the top bar as the page scrolls. At 1024px and wider the heading shrinks and fades while the bar name fades in. Below that the masthead moves into the bar (see the mobile navigation feature).
 
 ## How to get to it (user POV)
 
 - Open the site root.
 - Choose `Home` in the desktop navigation, or the `Caleb Mills, back to top` monogram link.
-- Choose `Home` in the mobile section menu.
+- Choose the `Home` tab in the mobile dock.
 - Open `http://127.0.0.1:<port>/#home` directly.
 
 ## Driving it with control-portfolio
@@ -33,8 +33,8 @@ Preconditions:
 
 ## Gotchas
 
-- On desktop, `Experience` matches the top-bar link (nth 1) and the hero link (nth 2). Below 1024px the top-bar links are inside the closed section menu, so the hero link is the only `Experience` link.
+- `Experience` matches the top-bar link or the mobile dock tab (nth 1) and the hero link (nth 2).
 - `Email me` occurs twice: the hero (nth 1) and the contact section (nth 2).
-- The hero has no Contact link. Contact is reached from the top bar, the section menu, or the Email me links.
-- The name heading fades out between 150px and 300px of scroll. Read it at the top of the page.
+- The hero has no Contact link. Contact is reached from the top bar, the mobile dock, or the Email me links.
+- The name heading fades out between 150px and 300px of scroll on desktop, and moves into the bar over about 180px on phones. Read it at the top of the page.
 - `browser open` resets the viewport to 1280×800. Set the viewport again after it when the recipe is not desktop.
