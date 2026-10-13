@@ -34,7 +34,7 @@ export type MorphFrame = {
 };
 
 /** Shortest morph, for a masthead that sits almost under the bar. */
-export const MIN_RANGE = 96;
+const MIN_RANGE = 96;
 /** Progress windows for the bar glass and the reduced-motion crossfade of the bar identity. */
 const BAR_FADE = [0.35, 1] as const;
 const SLOT_FADE = [0.5, 1] as const;
