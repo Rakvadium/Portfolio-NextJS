@@ -33,6 +33,7 @@ test("at the top every piece sits on its masthead spot and the bar is clear", ()
     progress: 0,
     barOpacity: 0,
     slotOpacity: 0,
+    mastheadOpacity: 1,
     underlineOpacity: 1,
     pieces: {
       avatar: { x: 36, y: 150, scale: 1 },
@@ -48,6 +49,7 @@ test("halfway, the avatar has nearly docked while the text still rides the page"
     progress: 0.5,
     barOpacity: 0.2308, // (0.5 - 0.35) / 0.65
     slotOpacity: 0,
+    mastheadOpacity: 0.5, // 1 - (0.5 - 0.25) / 0.5
     underlineOpacity: 0,
     pieces: {
       avatar: { x: 18.5, y: 12.75, scale: 0.475 }, // y: 18 -> 12, scale 1 -> 0.4
@@ -62,6 +64,7 @@ test("at the end of the range every piece sits on its bar slot, text centred on 
     progress: 1,
     barOpacity: 1,
     slotOpacity: 1,
+    mastheadOpacity: 0,
     underlineOpacity: 0,
     pieces: {
       avatar: { x: 16, y: 12, scale: 0.4 },

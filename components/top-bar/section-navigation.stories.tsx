@@ -37,5 +37,3 @@ export const FollowsScroll: Story = {
     await waitFor(() => expect(within(nav).getByRole("link", { current: true })).toHaveTextContent("Projects"));
   },
 };
-
-export const PhoneClosed: Story = { globals: { viewport: { value: "phone", isRotated: false } } };

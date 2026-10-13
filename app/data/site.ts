@@ -28,7 +28,7 @@ import { mapNonEmpty } from "../../lib/non-empty.ts";
 /* ------------------------------------------------------------- view types */
 
 /**
- * One entry per `sections` item, in page order. Drives the top-bar nav, the mobile menu, and the
+ * One entry per `sections` item, in page order. Drives the top-bar nav, the phone tab dock, and the
  * page's <section> shells. `heading` is set for sections that open with a SectionHeading
  * (Skills, Experience, Projects); Home has the h1 and Contact has its own "Get in touch" heading.
  */

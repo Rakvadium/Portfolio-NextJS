@@ -27,6 +27,8 @@ export type MorphFrame = {
   readonly barOpacity: number;
   /** The bar's own identity copy; only shown when the flying copies are not (reduced motion). */
   readonly slotOpacity: number;
+  /** The masthead's own pieces; only applied under reduced motion, where they fade instead of flying. */
+  readonly mastheadOpacity: number;
   readonly underlineOpacity: number;
   readonly pieces: Readonly<Record<MorphPiece, PieceTransform>>;
 };
@@ -36,6 +38,8 @@ export const MIN_RANGE = 96;
 /** Progress windows for the bar glass and the reduced-motion crossfade of the bar identity. */
 const BAR_FADE = [0.35, 1] as const;
 const SLOT_FADE = [0.5, 1] as const;
+/** Reduced motion: the masthead identity fades out ahead of the bar identity fading in. */
+const MASTHEAD_FADE = [0.25, 0.75] as const;
 /** The underline under the masthead title is gone by 40% progress. */
 const UNDERLINE_FADE_RATE = 2.5;
 
@@ -79,6 +83,7 @@ export function morphFrame(geometry: MorphGeometry, scrollY: number): MorphFrame
     progress,
     barOpacity: window01(progress, BAR_FADE),
     slotOpacity: window01(progress, SLOT_FADE),
+    mastheadOpacity: 1 - window01(progress, MASTHEAD_FADE),
     underlineOpacity: clamp01(1 - progress * UNDERLINE_FADE_RATE),
     pieces: { avatar: piece("avatar"), name: piece("name"), title: piece("title") },
   };

@@ -7,19 +7,37 @@
  *    so hydration matches. Transforms carry `motion-static`, which the rule below cancels for
  *    reduced-motion users; opacity (the handoff fade) and the progress line still run for them, as in G.
  *    No component reads the media query in JS.
+ *    The phone masthead -> top bar morph (components/mobile-nav) is this mechanism too, written as plain
+ *    motion values from a pure per-frame function (morph.ts) instead of useTransform ranges.
  *
  * 2. Entrances on load and reveals as a tile scrolls into view: CSS, in this file.
  *    The server HTML is the final, visible pose. Animations only move *from* an offset *to* that pose,
  *    and every one sits inside `prefers-reduced-motion: no-preference`. Reveals also sit inside
  *    `@supports (animation-timeline: view())`; browsers without it get static, visible content.
  *
- * Shared-layout springs (nav underline, role pill), the role panel crossfade, the accordion height,
- * and the mobile menu mount/unmount are framer too, inside <MotionConfig reducedMotion="user">.
+ * Shared-layout springs (nav underline, phone tab pill, role pill), the role panel crossfade, and the
+ * accordion height are framer too, inside <MotionConfig reducedMotion="user">.
  */
 
 @media (prefers-reduced-motion: reduce) {
   .motion-static {
     transform: none !important;
+  }
+}
+
+/* The phone masthead -> top bar morph (components/mobile-nav). While the bar has measured the masthead
+   it draws copies of the avatar, name and title that fly into the bar, so the masthead's own pieces go
+   transparent (they keep their layout and stay in the accessibility tree). Under reduced motion the
+   copies are display:none: the masthead pieces stay put and fade out (--masthead-opacity, written per
+   scroll frame) while the bar's identity fades in. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-masthead][data-morphing] [data-morph-piece] {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-masthead][data-morphing] [data-morph-piece] {
+    opacity: var(--masthead-opacity, 1);
   }
 }
 

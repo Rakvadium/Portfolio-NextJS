@@ -11,7 +11,7 @@ export function BrandMark({ brand }: { brand: Brand }) {
       >
         {brand.monogram}
       </span>
-      <BrandReveal className="hidden min-w-0 flex-col leading-tight sm:flex">
+      <BrandReveal className="flex min-w-0 flex-col leading-tight">
         <span className="truncate font-display text-[17px] font-bold tracking-tight">{brand.name}</span>
         <span className="truncate text-xs text-soft">{brand.title}</span>
       </BrandReveal>
