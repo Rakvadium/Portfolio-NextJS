@@ -1,6 +1,6 @@
 "use client";
 // PROTOTYPE (throwaway, branch prototype/mobile-nav): four mobile navigation designs switchable via
-// `?nav=current|A|B|C|D` on the existing `/` route. Below lg the chosen variant replaces the top bar;
+// `?nav=current|A..G` on the existing `/` route. Below lg the chosen variant replaces the top bar;
 // lg+ always renders the existing TopBar (passed in as children), unchanged.
 import { Suspense, type ComponentType, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
@@ -10,6 +10,9 @@ import { VariantA, name as nameA } from "./variant-a-dock";
 import { VariantB, name as nameB } from "./variant-b-island";
 import { VariantC, name as nameC } from "./variant-c-fullscreen";
 import { VariantD, name as nameD } from "./variant-d-rail";
+import { VariantE, name as nameE } from "./variant-e-glass";
+import { VariantF, name as nameF } from "./variant-f-glass-docked";
+import { VariantG, name as nameG } from "./variant-g-glass-labeled";
 
 export const variants = [
   { key: "current", name: "Today's header", Component: undefined },
@@ -17,6 +20,9 @@ export const variants = [
   { key: "B", name: nameB, Component: VariantB },
   { key: "C", name: nameC, Component: VariantC },
   { key: "D", name: nameD, Component: VariantD },
+  { key: "E", name: nameE, Component: VariantE },
+  { key: "F", name: nameF, Component: VariantF },
+  { key: "G", name: nameG, Component: VariantG },
 ] as const satisfies readonly { key: string; name: string; Component: ComponentType<MobileNavProps> | undefined }[];
 
 const showSwitcher = process.env.NEXT_PUBLIC_VERCEL_ENV !== "production";

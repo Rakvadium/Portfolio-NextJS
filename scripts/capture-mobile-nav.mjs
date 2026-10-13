@@ -17,7 +17,7 @@ const VIDEO = !args.includes("--no-video");
 const OUT = path.resolve("captures", "mobile-nav");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const VARIANTS = ["current", "A", "B", "C", "D"].filter((v) => !ONLY || ONLY.includes(v));
+const VARIANTS = ["current", "A", "B", "C", "D", "E", "F", "G"].filter((v) => !ONLY || ONLY.includes(v));
 
 // How to open each variant's menu (if it has one) and which link to use in it.
 const OPEN = {
@@ -26,7 +26,11 @@ const OPEN = {
   B: `button[aria-expanded="false"]`,
   C: `button[aria-label="Open menu"]`,
   D: null,
+  E: null,
+  F: null,
+  G: null,
 };
+const GLASS = ["E", "F", "G"];
 
 async function launch() {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "proto-nav-"));
@@ -129,9 +133,27 @@ async function stills(cdp, v) {
   await hideSwitcher(cdp, true);
   await shot(cdp, `${p}-1-top.png`);
   await cdp.evaluate(`document.getElementById('experience').scrollIntoView()`);
+  // Glass shells: push the Experience h2 under the bar so the collapsing title shows.
+  if (GLASS.includes(v)) await cdp.evaluate(`scrollBy(0, 160)`);
   await sleep(1000);
   await hideSwitcher(cdp, true);
   await shot(cdp, `${p}-2-experience.png`);
+  if (GLASS.includes(v)) {
+    await cdp.evaluate(`scrollTo(0, document.documentElement.scrollHeight)`);
+    await sleep(1000);
+    await shot(cdp, `${p}-3-contact.png`);
+  }
+  if (v === "F" || v === "G") {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+    await goto(cdp, url(v));
+    await instantScroll(cdp);
+    await cdp.evaluate(`document.getElementById('experience').scrollIntoView(); scrollBy(0, 160)`);
+    await sleep(1000);
+    await hideSwitcher(cdp, true);
+    await shot(cdp, `${p}-4-360x780.png`);
+    const overflow = await cdp.evaluate(`(() => { const r = [...document.querySelectorAll('[data-glass-shell] nav, [data-glass-shell] [role=group]')].map(e => e.getBoundingClientRect()); return { navRight: r[0].right, actLeft: r[1].left, actRight: r[1].right, vw: innerWidth }; })()`);
+    console.log(`  ${v} @360 bottom row:`, JSON.stringify(overflow));
+  }
   if (v === "D") {
     await cdp.evaluate(`scrollBy(0, -160)`);
     await sleep(900);
@@ -189,7 +211,7 @@ async function video(cdp, v) {
   }
   await tap(cdp, `nav a[href="#projects"], a[href="#projects"]`);
   await sleep(2200);
-  if (v === "A") {
+  if (v === "A" || GLASS.includes(v)) {
     await tap(cdp, `nav a[href="#contact"]`);
     await sleep(2200);
   }
@@ -214,6 +236,25 @@ async function video(cdp, v) {
 
 fs.mkdirSync(OUT, { recursive: true });
 const cdp = await launch();
+if (args.includes("--sheet")) {
+  // Comparison sheet: uvs reference | A | B | E | F | G, rows top-of-page + mid-page.
+  const ref = opt("ref") ?? "C:/Users/xenos/AppData/Local/Temp/uvs-home.png";
+  const cols = [["uvsdecks.gg", ref, null], ...["A", "B", "E", "F", "G"].map((v) => [v, path.join(OUT, `${v}-1-top.png`), path.join(OUT, `${v}-2-experience.png`)])];
+  const img = (f) => (f ? `<img src="file:///${f.split(path.sep).join("/")}">` : `<div class="blank">no mid-page reference</div>`);
+  const html = `<html><body style="margin:0;background:#0b0a0d;font:600 18px system-ui;color:#f3ede6"><div style="display:grid;grid-template-columns:repeat(${cols.length},390px);gap:16px;padding:16px">
+    ${cols.map(([l]) => `<div style="text-align:center">${l}</div>`).join("")}
+    ${cols.map(([, t]) => img(t)).join("")}
+    ${cols.map(([, , m]) => img(m)).join("")}
+  </div><style>img{width:390px;height:844px;display:block;border-radius:12px}.blank{width:390px;height:844px;display:flex;align-items:center;justify-content:center;color:#666;border:1px dashed #333;border-radius:12px}</style></body></html>`;
+  const htmlFile = path.join(os.tmpdir(), "proto-nav-sheet.html");
+  fs.writeFileSync(htmlFile, html);
+  const width = cols.length * 406 + 16;
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 1800, deviceScaleFactor: 1, mobile: false });
+  await goto(cdp, `file:///${htmlFile.split(path.sep).join("/")}`);
+  await shot(cdp, "sheet-uvs.png");
+  cdp.close();
+  process.exit(0);
+}
 for (const v of VARIANTS) {
   console.log(`nav=${v}`);
   await stills(cdp, v);
