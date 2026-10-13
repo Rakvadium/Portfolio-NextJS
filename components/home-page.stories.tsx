@@ -25,7 +25,25 @@ export const Desktop: Story = {
   },
 };
 
-export const Phone: Story = { globals: { viewport: { value: "phone", isRotated: false } } };
+/**
+ * Below lg: the masthead carries the one exposed h1, the phone bar's identity links back to top, and
+ * the dock holds the section tabs (Home current) and the social links. The lg bar is display:none.
+ */
+export const Phone: Story = {
+  globals: { viewport: { value: "phone", isRotated: false } },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    await expect(c.getByRole("heading", { level: 1, name: "Caleb Mills" })).toBeVisible();
+    await expect(c.getByRole("link", { name: "Caleb Mills, back to top" })).toHaveAttribute("href", "#home");
+    const tabs = c.getByRole("navigation", { name: "Sections" });
+    await expect(within(tabs).getByRole("link", { current: true })).toHaveAccessibleName("Home");
+    const social = within(c.getByRole("group", { name: "Social links" }));
+    for (const name of ["GitHub", "LinkedIn", "Email caleb.mills.1221@proton.me"]) {
+      await expect(social.getByRole("link", { name })).toBeVisible();
+    }
+  },
+};
 
 /** Derived copy follows the data: one project reads "One site I built and launched". */
 export const SingleProject: Story = { args: { site: fixtures.oneProject } };

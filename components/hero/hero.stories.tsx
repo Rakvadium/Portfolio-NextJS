@@ -26,7 +26,16 @@ export const Desktop: Story = {
   },
 };
 
-export const Phone: Story = { globals: { viewport: { value: "phone", isRotated: false } } };
+/** Below lg the masthead sits above the card and holds the only exposed h1; the card opens with "About me". */
+export const Phone: Story = {
+  globals: { viewport: { value: "phone", isRotated: false } },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    await expect(c.getByRole("heading", { level: 1, name: "Caleb Mills" })).toBeVisible();
+    await expect(c.getByText("About me")).toBeVisible();
+  },
+};
 
 export const LongName: Story = { args: { hero: fixtures.longName.hero } };
 

@@ -1,4 +1,5 @@
 // Story decorators: the only Storybook-specific rendering code. Components contain none.
+import type { ReactNode } from "react";
 import type { Decorator } from "@storybook/nextjs-vite";
 import { fontVariables } from "../app/fonts";
 import { site } from "../app/data/site";
@@ -20,24 +21,31 @@ export const withSiteRoot: Decorator = (Story) => (
  * Pair with `parameters: { layout: "fullscreen", docs: { story: { inline: false, iframeHeight } } }` and
  * `tags: ["!autodocs"]`, so `position: fixed` binds to the story's own iframe.
  * `stubs: false` renders a 300vh spacer instead, for stories whose own content provides the sections.
+ * `home` replaces the Home stub's placeholder (the phone top bar stories put the real Masthead there).
  */
-export function withScrollStage({ stubs = true }: { stubs?: boolean } = {}): Decorator {
+export function withScrollStage({ stubs = true, home }: { stubs?: boolean; home?: ReactNode } = {}): Decorator {
   function ScrollStage(Story: Parameters<Decorator>[0]) {
     return (
       <>
         <Story />
         {stubs ? (
-          <main className="mx-auto max-w-[1200px] px-4 pt-16 sm:px-6">
-            {site.sections.map((s) => (
-              <section
-                key={s.id}
-                id={s.id}
-                aria-label={`${s.label} placeholder`}
-                className="flex min-h-[110vh] items-start border-b border-white/10 pt-10"
-              >
-                <p className="font-display text-4xl font-bold text-soft">{s.label}</p>
-              </section>
-            ))}
+          <main className={`mx-auto max-w-[1200px] px-4 sm:px-6 ${home ? "" : "pt-16"}`}>
+            {site.sections.map((s) =>
+              s.id === "home" && home ? (
+                <section key={s.id} id={s.id} aria-label={`${s.label} placeholder`} className="min-h-[110vh] border-b border-white/10 pt-[60px]">
+                  {home}
+                </section>
+              ) : (
+                <section
+                  key={s.id}
+                  id={s.id}
+                  aria-label={`${s.label} placeholder`}
+                  className="flex min-h-[110vh] items-start border-b border-white/10 pt-10"
+                >
+                  <p className="font-display text-4xl font-bold text-soft">{s.label}</p>
+                </section>
+              ),
+            )}
           </main>
         ) : (
           <div aria-hidden className="h-[300vh]" />
