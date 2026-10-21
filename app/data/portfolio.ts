@@ -137,7 +137,7 @@ export const skillGroups = [
     id: "frontend",
     title: "Frontend",
     note: "Interfaces and apps",
-    skills: ["TypeScript", "React", "Next.js", "Vue/Nuxt", "React Native", "UI/UX"],
+    skills: ["TypeScript", "React", "Next.js", "Vue/Nuxt", "React Native"],
   },
   { id: "backend", title: "Backend", note: "Services and data", skills: ["Node.js", "C#/.NET", "REST APIs", "SQL"] },
   { id: "cloud", title: "Cloud", note: "Hosting and infrastructure", skills: ["AWS", "Azure"] },
@@ -146,6 +146,12 @@ export const skillGroups = [
     title: "AI",
     note: "Agents and tooling",
     skills: ["Claude Code", "Cursor", "Codex", "Agent skills", "Multi-agent workflows", "MCP"],
+  },
+  {
+    id: "design",
+    title: "Design",
+    note: "Interfaces and systems",
+    skills: ["Design systems", "UI/UX", "Accessibility", "Tailwind", "shadcn/ui", "Storybook"],
   },
 ] as const satisfies readonly SkillGroup[];
 
