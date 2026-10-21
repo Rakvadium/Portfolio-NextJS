@@ -28,11 +28,13 @@ export const Desktop: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole("region", { name: "Skills" })).toHaveAttribute("id", "skills");
-    for (const group of ["Frontend", "Backend", "Cloud"]) {
+    for (const group of ["Frontend", "Backend", "Cloud", "AI", "Design"]) {
       await expect(c.getByRole("heading", { level: 3, name: group })).toBeVisible();
     }
     await expect(c.getByText("Azure")).toBeVisible();
-    await expect(c.getByText(site.skills.footnote)).toBeVisible();
+    await expect(c.getByText("Agents and tooling")).toBeVisible();
+    await expect(c.getByText("Interfaces and systems")).toBeVisible();
+    await expect(c.getAllByText("UI/UX")).toHaveLength(1);
   },
 };
 

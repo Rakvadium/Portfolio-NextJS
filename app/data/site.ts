@@ -57,7 +57,6 @@ export type HeroView = {
 
 export type SkillsView = {
   readonly groups: Content["skillGroups"];
-  readonly footnote: string;
 };
 
 export type RoleView = {
@@ -198,7 +197,7 @@ export function buildSite(c: Content, today: YearMonth): Site {
       ],
       coreStack: c.coreStack,
     },
-    skills: { groups: c.skillGroups, footnote: c.skillsFootnote },
+    skills: { groups: c.skillGroups },
     roles: mapNonEmpty(c.roles, (r) => ({
       id: slugify(`${r.company.name} ${r.title}`),
       title: r.title,
