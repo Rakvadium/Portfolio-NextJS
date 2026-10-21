@@ -141,13 +141,17 @@ export const skillGroups = [
   },
   { id: "backend", title: "Backend", note: "Services and data", skills: ["Node.js", "C#/.NET", "REST APIs", "SQL"] },
   { id: "cloud", title: "Cloud", note: "Hosting and infrastructure", skills: ["AWS", "Azure"] },
+  {
+    id: "ai",
+    title: "AI",
+    note: "Agents and tooling",
+    skills: ["Claude Code", "Cursor", "Codex", "Agent skills", "Multi-agent workflows", "MCP"],
+  },
 ] as const satisfies readonly SkillGroup[];
 
 export type SkillName = (typeof skillGroups)[number]["skills"][number];
 
 export const coreStack = ["React", "TypeScript", "Next.js", "Node.js"] as const satisfies readonly SkillName[];
-
-export const skillsFootnote = "I use AI coding agents every day, and I spend a lot of time validating what they build.";
 
 export const projects = [
   {
@@ -180,8 +184,7 @@ export type Content = {
   readonly roles: readonly [Role, ...Role[]];
   readonly skillGroups: readonly SkillGroup[];
   readonly coreStack: readonly string[];
-  readonly skillsFootnote: string;
   readonly projects: readonly Project[];
 };
 
-export const content: Content = { profile, roles, skillGroups, coreStack, skillsFootnote, projects };
+export const content: Content = { profile, roles, skillGroups, coreStack, projects };
