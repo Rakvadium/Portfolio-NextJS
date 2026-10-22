@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# pstack helper-script installs (bun)
+.cursor/skills/poteto-mode/scripts/node_modules/
+
 # testing
 /coverage
 
